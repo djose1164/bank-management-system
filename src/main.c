@@ -1,7 +1,9 @@
+#include <stdio.h>
 #include "../include/login.h"
 
-int main(int argc, char const *argv[])
+int main()
 {
-    login_user();    
-    return 0;
+	login_user();
+
+	return (0);
 }

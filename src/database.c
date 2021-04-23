@@ -9,15 +9,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "../include/database.h"
-//#include "../include/users.h" Para proxima actualizacion.
 #include <string.h>
 
-const size_t MAX_USERS = 2;
 static short counter;
 
 // Variables globales.
 sqlite3 *db;
-sqlite3_stmt *res;
+sqlite3_stmt *res = NULL;
 static bool temp = true;
 const char *database_name = "test.db";
 
@@ -53,10 +51,24 @@ static void check_error(int conn, sqlite3 *db)
 
 static int __init_database__(const char *database_name)
 {
+    char *table_query;
+
 #ifndef CONNECTED
 #define CONNECTED
     int conn = sqlite3_open(database_name, &db);
     check_error(conn, db);
+
+    // Crea una query para luego ser usada para crear la database
+    table_query = "CREATE TABLE IF NOT EXISTS clients("
+                  "id INTEGER PRIMARY KEY NOT NULL, "
+                  "username TEXT,"
+                  "password TEXT,"
+                  "deposit_count INT DEFAULT 0,"
+                  "loan_count INT DEFAULT 0,"
+                  "deposit_total DOUBLE DEFAULT 0.0,"
+                  "loan_total DOUBLE DEFAULT 0.0);";
+    __create_table__(table_query);
+
     return 0;
 #endif //CONNECTED
 
@@ -66,8 +78,6 @@ static int __init_database__(const char *database_name)
 
 static void __create_table__(const char *query)
 {
-    __init_database__(database_name);
-
     char *errmsg;
     int conn = sqlite3_exec(db, query, 0, 0, &errmsg);
     check_error(conn, db);
@@ -87,7 +97,7 @@ static int __validate__(const char *const username, const char *const password)
     // Array de punteros para la consulta. Solo cambiar si tenes conocimiento de SQL.
     char *queries = {
         "SELECT username, password "
-        "FROM users "
+        "FROM clients "
         "WHERE username = ? AND "
         "password = ?;"};
 
@@ -114,6 +124,7 @@ static int __validate__(const char *const username, const char *const password)
     }
     else
     {
+        sqlite3_finalize(res);
         return true;
     }
     return -1;
@@ -122,110 +133,6 @@ static int __validate__(const char *const username, const char *const password)
 int validate(const char *username, const char *password)
 {
     return __validate__(username, password);
-}
-
-//! Agregar nuevos datos.
-
-bool __insert_into__(struct users_to_insert *const users_to_insert)
-{
-    char *query;
-    // Mensaje de error.
-    char *errmsg;
-    int conn;
-    char **data;
-
-    {
-        query = "INSERT INTO users(username, password) "
-                "VALUES(?, ?);";
-
-        // Cambiando estructura de datos.
-        data = malloc(sizeof(char) * 2);
-        *(data + 0) = malloc(sizeof(char) * (strlen(users_to_insert->username) + 1));
-        *(data + 1) = malloc(sizeof(char) * (strlen(users_to_insert->password) + 1));
-
-        strcpy(data[0], users_to_insert->username);
-        strcpy(data[1], users_to_insert->password);
-
-        /*
-        printf("%s\n", data[0]);
-        printf("%s\n", data[1]);
-        */
-
-        // Prepara la coneccion.
-        conn = sqlite3_prepare_v2(db, query, -1, &res, NULL);
-        check_error(conn, db);
-
-        for (size_t i = 1; i <= 2; i++)
-        {
-            // Enlaza el valor (cambia ? por su debido valor).
-            conn = sqlite3_bind_text(res, i, data[i - 1], -1, NULL);
-            check_error(conn, db);
-        }
-
-        // Esta funcion es IMPORTANTISIMA. Cuanto tiempo perdi joder xD.
-        int step = sqlite3_step(res);
-        // La de arriba ^^^
-
-        sqlite3_finalize(res);
-        free(users_to_insert);
-        free(data);
-        return true;
-    }
-   /*
-    else
-    {
-#ifndef CREATED_TABLE
-#define CREATED_TABLE
-        query = "CREATE TABLE IF NOT EXISTS products( "
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "nombre TEXT, "
-                "precio INT, "
-                "cantidad INT);";
-
-        __create_table__(query);
-#endif //CREATED_TABLE
-
-        query = "INSERT INTO products("
-                "id, nombre, precio, cantidad) "
-                "VALUES(NULL, ?, ?, ?);";
-
-        // Cambiando estructura de datos.
-        data = malloc(sizeof(char) * 1);
-        for (size_t i = 0; i < 1; i++)
-        {
-            data[i] = malloc(sizeof(char) * 1);
-        }
-        strcpy(data[0], products->product_name);
-
-        int int_data[] = {products->sell_price,
-                          products->available_quantity};
-
-        conn = sqlite3_prepare_v2(db, query, -1, &res, NULL);
-        check_error(conn, db);
-
-        conn = sqlite3_bind_text(res, 1, data[0], -1, NULL);
-        check_error(conn, db);
-
-        //Vinculacion de los datos.
-        for (size_t i = 0; i < 2; i++)
-        {
-            conn = sqlite3_bind_int(res, i + 2, int_data[i]);
-            check_error(conn, db);
-        }
-
-        conn = sqlite3_step(res);
-
-        sqlite3_finalize(res);
-        free(products);
-        free(data);
-        return conn == SQLITE_DONE;
-    }
-
-    */
-
-    sqlite3_finalize(res);
-    free(data);
-    return false;
 }
 
 //! Realizar una consulta.
@@ -250,52 +157,35 @@ bool __make_query__(const char *query)
 
 void add_user(const char *username, const char *password)
 {
-    /**
-     **Solo establecera la coneccion con la database una vez por ejecucion del
-     **programa.
-    */
+    __init_database__(database_name);
 
-    // Crea una query para luego ser usada para crear la database
-    char *table_query = {"CREATE TABLE IF NOT EXISTS users("
-                         "username TEXT, "
-                         "password TEXT);"};
-    __create_table__(table_query);
+    char *sql;
+    char *table_query;
+    const char *data[] = {
+        username,
+        password};
 
-    // Coloca memoria para la primera dimension del array.
-    struct users_to_insert **users_to_insert = malloc(sizeof(struct users_to_insert) * MAX_USERS);
-    if (!users_to_insert)
-        exit(-1);
-    // Pone todas las structs a vacia.
-    for (size_t i = 0; i < MAX_USERS; i++)
+    // Almacena los datos por caa cada estructura vacia.
+    sql = "INSERT INTO clients(username, password) "
+          "VALUES(?, ?);";
+
+    // Prepara la coneccion.
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+
+    for (size_t i = 1; i <= 2; i++)
     {
-        // Coloca memoria para la segunda dimension del array.
-        users_to_insert[i] = malloc(sizeof(users_to_insert[0]));
-        if (!users_to_insert[i])
-            exit(-1);
-        users_to_insert[i]->full = false;
-    }
-    // Toma una struct vacia y almacena los datos alli.
-    bool temp = true;
-    for (size_t i = 0; i < MAX_USERS && temp; i++)
-    {
-        temp = true;
-        if (!users_to_insert[i]->full)
-        {
-            users_to_insert[i]->full = true;
-            // Alocacion de memoria
-            users_to_insert[i]->username = allocate_str(strlen(username));
-            users_to_insert[i]->password = allocate_str(strlen(password));
-            // Copia el contenido a la nueva direccion de memoria.
-            strcpy(users_to_insert[i]->username, username);
-            strcpy(users_to_insert[i]->password, password);
 
-            // Almacena los datos por caa cada estructura vacia.
-            if (__insert_into__(users_to_insert[i]))
-                printf("User created successfully!\n");
-
-            temp = false;
-        }
+        // Enlaza el valor (cambia ? por su debido valor).
+        conn = sqlite3_bind_text(res, i, data[i - 1], -1, NULL);
+        check_error(conn, db);
     }
+
+    // Esta funcion es IMPORTANTISIMA. Cuanto tiempo perdi joder xD.
+    int step = sqlite3_step(res);
+    // La de arriba ^^^
+
+    sqlite3_finalize(res);
 }
 
 //!-*-*-*-*-*-* Actualizar los datos -*-*-*-*-*-*
@@ -305,7 +195,7 @@ bool update(const unsigned id, const char *new_name,
 {
     if (id <= 0)
         return false;
-/*
+    /*
     if (new_name)
         return __update_name__(id, new_name);
     else if (new_sellPrice)
@@ -381,25 +271,61 @@ static void *__get_name__(const unsigned id)
     return temp;
 }
 
-static void *__get_price__(const unsigned id)
+unsigned get_id(const char *username, const char *password)
 {
-    int conn;
-    static unsigned price;
-    char *sql = "SELECT precio "
-                "FROM products "
-                "WHERE id = ?;";
+    __init_database__(database_name);
 
+    int conn;
+    unsigned temp;
+    char *sql = "SELECT id "
+                "FROM clients "
+                "WHERE username = ? AND "
+                "password = ?;";
     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
     check_error(conn, db);
-    conn = sqlite3_bind_int(res, 1, id);
+    conn = sqlite3_bind_text(res, 1, username, -1, NULL);
+    check_error(conn, db);
+    conn = sqlite3_bind_text(res, 2, password, -1, NULL);
     check_error(conn, db);
     conn = sqlite3_step(res);
 
-    price = conn == SQLITE_ROW ? sqlite3_column_int(res, 0) : -1;
+    temp = conn == SQLITE_ROW ? sqlite3_column_int(res, 0) : 0;
     sqlite3_finalize(res);
-    return (void *)&price;
+    return temp;
 }
 
+void save_new_deposit(const unsigned id, const double cash)
+{
+    char *sql;
+    int conn;
+
+    /**Establece y/o crea la database. */
+    __init_database__(database_name);
+
+    /**Consulta.*/
+    sql = "UPDATE clients "
+          "SET deposit_count = deposit_count + 1, "
+          "deposit_total = deposit_total + ?"
+          "WHERE id = ?;";
+
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+
+    sqlite3_bind_double(res, 1, cash);
+    check_error(conn, db);
+    sqlite3_bind_int(res, 2, id);
+    check_error(conn, db);
+
+    printf("%u %lf\n", id, cash);
+
+    conn = sqlite3_step(res);
+    if (conn == SQLITE_DONE)
+        printf("\t\aDeposito realizado con exito!\n");
+    else
+        printf("\t\aNo se ha podido realizar el deposito!\n");
+    sqlite3_finalize(res);
+    //system("cls||clear");
+}
 int callback(void *data, int column_count, char **columns, char **columns_names)
 {
     if (temp)

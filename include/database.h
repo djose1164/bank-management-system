@@ -18,6 +18,7 @@
 #endif //! __WIN32
 #include <stdbool.h>
 #include <stddef.h>
+#include "../include/client.h"
 
 /**Struct donde se almacenara los datos a guardar. Deberas pasar esto a su
  * debida funcion.
@@ -98,9 +99,8 @@ static void __create_table__(const char *query);
  * @param table_name El nombre de la tabla.
  * @param columns_name El nombre de la columna a la cual deseas agregar datos.
  * @param rows La cantidad de datos por fila 
- * 
  */
-bool __insert_into__(struct users_to_insert *const users_to_insert);
+void __insert_into__(struct Client *const self);
 /**
  * @brief Recibe una query para ejecutar la consulta.
  * 
@@ -164,9 +164,8 @@ bool update();
  */
 void *get_column_value(const unsigned id, const unsigned __request_value);
 
-/** 
- * TODO: Si crees que faltan alguna funcion, anadale en forma de comentario. Y explicacion de lo q hace.
- * TODO: De igual forma, si crees q alguna funcion debe ser modifica, sugiere el cambio en modo de comentario.
- */
+void save_new_deposit(const unsigned id, const double cash);
+void save_new_loan();
 
+unsigned get_id(const char *username, const char *password);
 #endif // !DATABASE_H

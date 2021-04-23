@@ -23,9 +23,12 @@
 #endif //__WIN32
 #include "../include/database.h"
 #include "../include/login.h"
+#include "../include/client.h"
 
 // Usuario actual que esta ejecutando el programa.
 static struct actual_user actual_user;
+
+struct Client *client;
 
 // Tiempo que durara el copilador parado.
 const short time = 1;
@@ -96,7 +99,8 @@ int login_menu()
 				   "Porque, pues te quedan %zu intentos.\n",
 				   i);
 
-		printf("\n\t\aQue quieres hacer? Ingresa el numero de la opcion deseada:  \n\n"
+		printf("\n\t\t\aBienvenido al menu principal!\n"
+			   "\tQue quieres hacer? Ingresa el numero de la opcion deseada:  \n\n"
 			   "\t1- Realizar un deposito.\n"
 			   "\t2- Tomar un prestamo.\n"
 			   "\t3- Transacciones.\n"
@@ -115,7 +119,7 @@ int login_menu()
 	switch (options)
 	{
 	case DEPOSITO:
-		printf("\nEn construccion!");
+		make_deposit(client);
 		return false;
 	case PRESTAMO:
 		printf("\nEn construccion!");
@@ -177,9 +181,9 @@ int login_user()
 
 		clear_screen();
 
-			/**Imprime al usuario q coga una opcion correcta. */
-			if (temp > 2)
-				printf("Por favor elige una opcion correta.\n");
+		/**Imprime al usuario q coga una opcion correcta. */
+		if (temp > 2)
+			printf("Por favor elige una opcion correta.\n");
 	} while (temp > 2);
 
 	/**Dependiendo del valor en temp, el usuario se logeara o registrara. */
@@ -196,9 +200,14 @@ int login_user()
 		printf("Password: ");
 		set_password(actual_user.password);
 
-		system("clear||cls");
+		clear_screen();
 		// Anade al usuario.
 		add_user(actual_user.username, actual_user.password);
+
+		/**Construye una instancia. */
+		client = malloc(sizeof(struct Client));
+		__init__(client, actual_user.username, actual_user.password,
+				 get_id(actual_user.username, actual_user.password));
 
 		// Luego entra en un blucle hasta que presione la letra de salir.
 		for (; login_menu();)
@@ -225,6 +234,11 @@ int login_user()
 
 			printf("\t\aPassword: ");
 			set_password(actual_user.password);
+
+			/**Construye una instancia. */
+			client = malloc(sizeof(struct Client));
+			__init__(client, actual_user.username, actual_user.password,
+					 get_id(actual_user.username, actual_user.password));
 
 			temp_validate = validate(actual_user.username, actual_user.password);
 			if (temp_validate)
