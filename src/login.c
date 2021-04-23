@@ -196,13 +196,9 @@ int login_user()
 		printf("Password: ");
 		set_password(actual_user.password);
 
-		printf("\nEs admin: ");
-		scanf(" %d", &actual_user.is_admin);
-		getchar();
-
 		system("clear||cls");
 		// Anade al usuario.
-		add_user(actual_user.username, actual_user.password, actual_user.is_admin);
+		add_user(actual_user.username, actual_user.password);
 
 		// Luego entra en un blucle hasta que presione la letra de salir.
 		for (; login_menu();)
@@ -231,7 +227,7 @@ int login_user()
 			set_password(actual_user.password);
 
 			temp_validate = validate(actual_user.username, actual_user.password);
-			if (!temp_validate)
+			if (temp_validate)
 			// TODO: mostrar el login menu y/o mostrar un mensaje de que se ha logeado.
 			{
 				for (; login_menu();)

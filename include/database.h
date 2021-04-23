@@ -28,8 +28,6 @@ struct users_to_insert
     char *username;
     // Password del usuario a guardar.
     char *password;
-    // Su nivel de priveligio.
-    int is_admin;
     // Esta llena?
     bool full;
 };
@@ -134,10 +132,9 @@ static void *__get_name__(const unsigned id);
  * 
  * @param username Nombre del usuario.
  * @param password La contraseña.
- * @param is_admin True si lo es, false si es invitado.
  * @return int 
  */
-void add_user(const char *username, const char *password, int is_admin);
+void add_user(const char *username, const char *password);
 
 /**
  * @brief Usalo para verificar el usario y la contraseña del usario.

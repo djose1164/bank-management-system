@@ -86,7 +86,7 @@ static int __validate__(const char *const username, const char *const password)
 
     // Array de punteros para la consulta. Solo cambiar si tenes conocimiento de SQL.
     char *queries = {
-        "SELECT username, password, is_admin "
+        "SELECT username, password "
         "FROM users "
         "WHERE username = ? AND "
         "password = ?;"};
@@ -110,22 +110,11 @@ static int __validate__(const char *const username, const char *const password)
     {
         sqlite3_finalize(res);
         sqlite3_close(db);
-        return not_found;
+        return false;
     }
     else
     {
-        if (1 == sqlite3_column_int(res, 2))
-        {
-            sqlite3_finalize(res);
-            sqlite3_close(db);
-            return admin;
-        }
-        else
-        {
-            sqlite3_finalize(res);
-            sqlite3_close(db);
-            return guest;
-        }
+        return true;
     }
     return -1;
 }
@@ -137,8 +126,7 @@ int validate(const char *username, const char *password)
 
 //! Agregar nuevos datos.
 
-bool __insert_into__(struct users_to_insert *const users_to_insert,
-                     struct products *const products)
+bool __insert_into__(struct users_to_insert *const users_to_insert)
 {
     char *query;
     // Mensaje de error.
@@ -146,10 +134,9 @@ bool __insert_into__(struct users_to_insert *const users_to_insert,
     int conn;
     char **data;
 
-    if (!products)
     {
-        query = "INSERT INTO users(username, password, is_admin) "
-                "VALUES(?, ?, ?);";
+        query = "INSERT INTO users(username, password) "
+                "VALUES(?, ?);";
 
         // Cambiando estructura de datos.
         data = malloc(sizeof(char) * 2);
@@ -174,8 +161,6 @@ bool __insert_into__(struct users_to_insert *const users_to_insert,
             conn = sqlite3_bind_text(res, i, data[i - 1], -1, NULL);
             check_error(conn, db);
         }
-        conn = sqlite3_bind_int(res, 3, users_to_insert->is_admin);
-        check_error(conn, db);
 
         // Esta funcion es IMPORTANTISIMA. Cuanto tiempo perdi joder xD.
         int step = sqlite3_step(res);
@@ -186,6 +171,7 @@ bool __insert_into__(struct users_to_insert *const users_to_insert,
         free(data);
         return true;
     }
+   /*
     else
     {
 #ifndef CREATED_TABLE
@@ -235,6 +221,8 @@ bool __insert_into__(struct users_to_insert *const users_to_insert,
         return conn == SQLITE_DONE;
     }
 
+    */
+
     sqlite3_finalize(res);
     free(data);
     return false;
@@ -260,7 +248,7 @@ bool __make_query__(const char *query)
 
 //! Anandir nuevo usuario a la database.
 
-void add_user(const char *username, const char *password, int is_admin)
+void add_user(const char *username, const char *password)
 {
     /**
      **Solo establecera la coneccion con la database una vez por ejecucion del
@@ -270,8 +258,7 @@ void add_user(const char *username, const char *password, int is_admin)
     // Crea una query para luego ser usada para crear la database
     char *table_query = {"CREATE TABLE IF NOT EXISTS users("
                          "username TEXT, "
-                         "password TEXT, "
-                         "is_admin INT);"};
+                         "password TEXT);"};
     __create_table__(table_query);
 
     // Coloca memoria para la primera dimension del array.
@@ -301,10 +288,9 @@ void add_user(const char *username, const char *password, int is_admin)
             // Copia el contenido a la nueva direccion de memoria.
             strcpy(users_to_insert[i]->username, username);
             strcpy(users_to_insert[i]->password, password);
-            users_to_insert[i]->is_admin = is_admin;
 
             // Almacena los datos por caa cada estructura vacia.
-            if (__insert_into__(users_to_insert[i], NULL))
+            if (__insert_into__(users_to_insert[i]))
                 printf("User created successfully!\n");
 
             temp = false;
@@ -319,17 +305,17 @@ bool update(const unsigned id, const char *new_name,
 {
     if (id <= 0)
         return false;
-
+/*
     if (new_name)
         return __update_name__(id, new_name);
     else if (new_sellPrice)
         return __update_price__(id, *new_sellPrice);
     else if (new_availableQuantity)
         return __update_quantity__(id, *new_availableQuantity);
-
+*/
     return false;
 }
-
+/*
 static bool __update_name__(const unsigned id, const char *new_name)
 {
     int conn;
@@ -356,56 +342,7 @@ static bool __update_name__(const unsigned id, const char *new_name)
     sqlite3_finalize(res);
     return conn == SQLITE_DONE;
 }
-
-static bool __update_quantity__(const unsigned id, const int quantity)
-{
-    int conn;
-    char *errmsg;
-    __init_database__(database_name);
-
-    char *sql = "UPDATE products "
-                "SET cantidad = cantidad + ?"
-                "WHERE id = ?;";
-
-    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-    check_error(conn, db);
-
-    sqlite3_bind_int(res, 1, quantity);
-    check_error(conn, db);
-
-    sqlite3_bind_int(res, 2, id);
-    check_error(conn, db);
-
-    conn = sqlite3_step(res);
-    // if (conn ==)
-    sqlite3_finalize(res);
-
-    return conn == SQLITE_DONE;
-}
-
-static bool __update_price__(const unsigned id, const unsigned new_price)
-{
-    int conn;
-    char *errmsg;
-    __init_database__(database_name);
-
-    char *sql = "UPDATE products "
-                "SET precio = ? "
-                "WHERE id = ?;";
-
-    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-    check_error(conn, db);
-
-    sqlite3_bind_int(res, 1, new_price);
-    check_error(conn, db);
-
-    sqlite3_bind_int(res, 2, id);
-    check_error(conn, db);
-
-    conn = sqlite3_step(res);
-    sqlite3_finalize(res);
-    return conn == SQLITE_DONE;
-}
+*/
 
 //! Obtener valores.
 
@@ -414,7 +351,7 @@ void *get_column_value(const unsigned id, const unsigned __request_value)
     __init_database__(database_name);
     if (id <= 0)
         return NULL;
-
+    /*
     if (__request_value == NAME)
         return __get_name__(id);
     else if (__request_value == PRICE)
@@ -423,6 +360,7 @@ void *get_column_value(const unsigned id, const unsigned __request_value)
     //    return __get_quantity__(id);
     else
         return (void *)-1;
+        */
 }
 
 static void *__get_name__(const unsigned id)

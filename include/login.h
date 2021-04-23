@@ -12,6 +12,8 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
+#include <stdbool.h>
+
 enum menu_option
 {
     DEPOSITO = 1,
