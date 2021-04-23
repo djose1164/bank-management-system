@@ -46,7 +46,7 @@ struct Client *__init__(struct Client *self, const char *username,
  * @return true Se ha realizado el deposito con el exito.
  * @return false Error.
  */
-bool make_deposit(struct Client *const self);
+void make_deposit(struct Client *const self);
 
 /**
  * @brief Realiza un prestamo al banco.
@@ -55,7 +55,7 @@ bool make_deposit(struct Client *const self);
  * en la database.
  * @return false El banco no tiene suficiente dinero.
  */
-bool new_loan();
+void new_loan(struct Client *const self);
 
 /**
  * @brief Realiza una transaccion. El dinero usado sera restado. 

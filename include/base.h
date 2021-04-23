@@ -9,6 +9,8 @@ struct Base
 {
     /**La cantidad total de los prestamos realizados. */
     double loan_total;
+    /**Total de los depositos hechos. */
+    double deposit_total;
     /**El dinero disponible. Se obtiene de los depositos realizados. */
     double available_cash;
     /**Cantidad de prestamos realizados. */

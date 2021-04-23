@@ -122,7 +122,7 @@ int login_menu()
 		make_deposit(client);
 		return false;
 	case PRESTAMO:
-		printf("\nEn construccion!");
+		new_loan(client);
 		return false;
 	case TRANSACCIONES:
 		printf("\nEn construccion!");

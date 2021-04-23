@@ -39,7 +39,7 @@ void delete_object(struct Client *const self)
         return;
 }
 
-bool make_deposit(struct Client *const self)
+void make_deposit(struct Client *const self)
 {
     /**Para el uso de fgets y sscanf. */
     char line[sizeof(double)];
@@ -53,5 +53,31 @@ bool make_deposit(struct Client *const self)
     sscanf(line, "%lf", &self->base.available_cash);
 
     save_new_deposit(self->id, self->base.available_cash);
-    return true;
+}
+
+void new_loan(struct Client *const self)
+{
+    /**El dinero el cual sera prestado. */
+    double requested_cash;
+    /**Donde se recogera el input. Prar fgets. */
+    char line[sizeof(double)];
+
+    clear_screen();
+
+    /**Pide por teclado el dinero a solicitar. */
+    printf("\t\aHola! Aca podra tomar un prestamo!\n"
+           "\tIngrese la cantidad a solicitar: ");
+    fgets(line, sizeof(line), stdin);
+    sscanf(line, "%lf", &requested_cash);
+
+    self->base.loans_made += 1;
+    self->base.loan_total += requested_cash;
+
+    save_new_loan(self->id, requested_cash);
+}
+
+void show_client_status(struct Client *const self)
+{
+    self->base.available_cash = self->base.deposit_total +
+                                self->base.loan_total;
 }

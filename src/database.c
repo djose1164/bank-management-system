@@ -326,6 +326,38 @@ void save_new_deposit(const unsigned id, const double cash)
     sqlite3_finalize(res);
     //system("cls||clear");
 }
+
+void save_new_loan(const unsigned id, const double cash)
+{
+    char *sql;
+    int conn;
+
+    /**Establece y/o crea la database. */
+    __init_database__(database_name);
+
+    /**Consulta.*/
+    sql = "UPDATE clients "
+          "SET loan_count = loan_count + 1, "
+          "loan_total = loan_total + ?"
+          "WHERE id = ?;";
+
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+
+    sqlite3_bind_double(res, 1, cash);
+    check_error(conn, db);
+    sqlite3_bind_int(res, 2, id);
+    check_error(conn, db);
+
+    conn = sqlite3_step(res);
+    if (conn == SQLITE_DONE)
+        printf("\t\aPrestamo realizado con exito!\n");
+    else
+        printf("\t\aNo se ha podido realizar el prestamo!\n");
+    sqlite3_finalize(res);
+    //system("cls||clear");
+}
+
 int callback(void *data, int column_count, char **columns, char **columns_names)
 {
     if (temp)
