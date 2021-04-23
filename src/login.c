@@ -11,20 +11,14 @@
 #endif //__WIN32
 #include "../include/database.h"
 #include "../include/login.h"
-#include "../include/compra.h"
-#include "../include/contabilidad.h"
-#include "../include/inventario.h"
-#include "../include/venta.h"
-//#include"inventario.h"
 
 // Usuario actual que esta ejecutando el programa.
 static struct actual_user actual_user;
 
 // Tiempo que durara el copilador parado.
-const short time = 2;
+const short time = 1;
 
-#define LONGITUD 50 
-
+#define LONGITUD 50
 
 void set_password(char *const password)
 {
@@ -37,33 +31,28 @@ void set_password(char *const password)
 			return;
 		}
 		else if (c == 8)
-            {
-                if (i > 0)
-                {
-                    printf("\b \b"); //mueve el cursor hacia la izquierda
-                }
-            }
-            else if (i < LONGITUD)
-                        
-                {
-                    printf("*");
-                    password[i] = c;
-                   
-                }
-    }
+		{
+			if (i > 0)
+			{
+				printf("\b \b"); //mueve el cursor hacia la izquierda
+			}
+		}
+		else if (i < LONGITUD)
+		{
+			printf("*");
+			password[i] = c;
+		}
+	}
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*- Login para el Menu *-*-*-*-*-*-*-*-*-*-*-*-
 
 int login_menu()
 {
-	/**Este es el inicio, luego de entrar al sistema
-	 * 
-	 */
+	/**Este es el inicio, luego de entrar al sistema */
 	unsigned options = 0;
 
-	fflush(stdout);
-	system("cls||clear");
+	clear_screen();
 
 	// Para que no se sienta la espera.
 	printf("Empezando sistema de carga...\n");
@@ -100,13 +89,13 @@ int login_menu()
 		if (inventory_menu())
 			return login_menu();
 	case COMPRAS:
-			return compras_menu();
+		return compras_menu();
 	case VENTAS:
 		return ventas_menu();
 
 	case CONTABILIDAD:
 		return contabilidad_menu();
-		
+
 	case SALIR:
 		fflush(stdout);
 		system("cls||clear");
