@@ -75,13 +75,13 @@ void new_loan(struct Client *const self)
 
     save_new_loan(self->id, requested_cash);
 }
-
+/*
 void show_client_status(struct Client *const self)
 {
     self->base.available_cash = self->base.deposit_total +
                                 self->base.loan_total;
 }
-
+*/
 void make_transation(struct Client *const self)
 {
     char line[sizeof(double)];
@@ -101,4 +101,22 @@ void make_transation(struct Client *const self)
     sscanf(line, "%lf", &cash);
 
     subtract_cash(self->id, id, cash);
+}
+
+void pay_loan(struct Client *const self)
+{
+    char line[sizeof(double)];
+    double cash;
+
+    clear_screen();
+    
+    printf("\t\aHola! Aca podra pagar tus prestamos!\n"
+           "Ingrese el monto a pagar: ");
+    fgets(line, sizeof(line), stdin);
+    sscanf(line, "%lf", &cash);
+
+    if (payment(self->id, cash))
+        printf("TU pago se ha registrado con exito!\n");
+    else
+        fprintf(stderr, "No se ha podido realizar el pago.\n");
 }

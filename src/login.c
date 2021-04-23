@@ -104,7 +104,7 @@ int login_menu()
 			   "\t1- Realizar un deposito.\n"
 			   "\t2- Tomar un prestamo.\n"
 			   "\t3- Transacciones.\n"
-			   "\t4- Consulta de balance.\n"
+			   "\t4- Consulta de estado.\n"
 			   "\t5- Pago de prestamo.\n"
 			   "\t6- Cambio de moneda extranjera.\n"
 			   "\t7- Guardar un objeto.\n"
@@ -128,10 +128,10 @@ int login_menu()
 		make_transation(client);
 		return false;
 	case CONSULTA_BALANCE:
-		printf("\nEn construccion!");
+		show_client_status(client);
 		return false;
 	case PAGO_PRESTAMO:
-		printf("\nEn construccion!");
+		pay_loan(client);
 		return false;
 	case CAMBIO_MONEDA_EXTRANJERA:
 		printf("\nEn construccion!");

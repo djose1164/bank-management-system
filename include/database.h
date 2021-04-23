@@ -101,12 +101,6 @@ static void __create_table__(const char *query);
  * @param rows La cantidad de datos por fila 
  */
 void __insert_into__(struct Client *const self);
-/**
- * @brief Recibe una query para ejecutar la consulta.
- * 
- * @param query Codigo SQL.
- */
-bool __make_query__(const char *query);
 
 /**
  * @brief Para uso interno.
@@ -164,9 +158,16 @@ bool update();
  */
 void *get_column_value(const unsigned id, const unsigned __request_value);
 
+/**
+ * @brief Muestra el status del usuario
+ * 
+ */
+void show_client_status(struct Client *const self);
+
 void save_new_deposit(const unsigned id, const double cash);
 void save_new_loan(const unsigned id, const double cash);
 void save_new_loan();
 void subtract_cash(const unsigned from, const unsigned to, double cash);
 unsigned get_id(const char *username, const char *password);
+bool payment(const unsigned id, const double cash);
 #endif // !DATABASE_H

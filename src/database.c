@@ -137,20 +137,51 @@ int validate(const char *username, const char *password)
 
 //! Realizar una consulta.
 
-bool __make_query__(const char *query)
+void show_client_status(struct Client *const self)
 {
     __init_database__(database_name);
     char *errmsg;
+    int conn;
+    char *sql = "SELECT deposit_count, loan_count, deposit_total, loan_total "
+                "FROM clients "
+                "WHERE id = ?;";
 
     int callback(void *data, int column_count, char **columns, char **columns_names);
 
-    int conn = sqlite3_exec(db, query, callback, NULL, &errmsg);
-    if (conn == SQLITE_ERROR)
-        return false;
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
     check_error(conn, db);
+
+    conn = sqlite3_bind_int(res, 1, self->id);
+    check_error(conn, db);
+
+    system("cls||clear");
+
+    int step = sqlite3_step(res);
+
+    if (step == SQLITE_ROW)
+        printf("\t\aHola! Ahora mismo estas viendo el estado acutal de tu cuenta!\n"
+               "En la primera columna estan el numero de veces que haz realizado un deposito.\n"
+               "En la segunda, la cantidad de veces que haz realizado un prestamo.\n"
+               "Y por ultimo, en las dos ultimas columnas, se muestran los totales!\n"
+               "*---------------*---------------*---------------*---------------*\n"
+               "|%-15s|%-15s|%-15s|%-15s|\n",
+               sqlite3_column_name(res, 0),
+               sqlite3_column_name(res, 1),
+               sqlite3_column_name(res, 2),
+               sqlite3_column_name(res, 3));
+
+    printf("*---------------*---------------*---------------*---------------*\n");
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        printf("|%-15s", sqlite3_column_text(res, i));
+
+        if (i == 3)
+            printf("|\n");
+    }
     // Para la ultima linea de la tabla.
-    printf("*--------*--------------------*----------*----------*\n");
-    return true;
+    printf("*---------------*---------------*---------------*---------------*\n");
+    sqlite3_finalize(res);
 }
 
 //! Anandir nuevo usuario a la database.
@@ -316,8 +347,6 @@ void save_new_deposit(const unsigned id, const double cash)
     sqlite3_bind_int(res, 2, id);
     check_error(conn, db);
 
-    printf("%u %lf\n", id, cash);
-
     conn = sqlite3_step(res);
     if (conn == SQLITE_DONE)
         printf("\t\aDeposito realizado con exito!\n");
@@ -398,26 +427,26 @@ void subtract_cash(const unsigned from, const unsigned to, double cash)
             sqlite3_finalize(res);
             sqlite3_close(db);
         }
-        
-        
-    }else
+    }
+    else
         printf("No se ha podido realizar la transaccion.\n");
 }
 
-int callback(void *data, int column_count, char **columns, char **columns_names)
+bool payment(const unsigned id, const double cash)
 {
-    if (temp)
-        printf("*--------*--------------------*----------*----------*\n"
-               "|%-8s|%-20s|%-10s|%-10s|\n",
-               columns_names[0], columns_names[1], columns_names[2],
-               columns_names[3]);
+    int conn;
+    char *sql = "UPDATE clients "
+                "SET loan_total = loan_total - ? "
+                "WHERE id = ?;";
+    
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
 
-    temp = false;
+    conn = sqlite3_bind_double(res, 1, cash);
+    check_error(conn, db);
+    conn = sqlite3_bind_int(res, 2, id);
 
-    fflush(stdout);
-    printf("*--------*--------------------*----------*----------*\n"
-           "|%-8s|%-20s|%-10s|%-10s|\n",
-           columns[0], columns[1], columns[2], columns[3]);
-
-    return 0;
+    bool status = sqlite3_step(res) == SQLITE_DONE;
+    sqlite3_finalize(res);
+    return status;
 }

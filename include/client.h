@@ -68,12 +68,6 @@ void new_loan(struct Client *const self);
 void make_transation(struct Client *const self);
 
 /**
- * @brief Muestra el status del usuario
- * 
- */
-void show_client_status();
-
-/**
  * @brief Convierte de una divisa a otra.
  * 
  */
@@ -84,5 +78,7 @@ void exchange_foreign_money();
  * 
  */
 void save_object();
+
+void pay_loan(struct Client *const self);
 
 #endif //CLIENT_H
