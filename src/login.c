@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -114,24 +115,26 @@ int login_menu()
 	switch (options)
 	{
 	case DEPOSITO:
-		if (inventory_menu())
-			return login_menu();
+		printf("\nEn construccion!");
+		return false;
 	case PRESTAMO:
-		return compras_menu();
+		printf("\nEn construccion!");
+		return false;
 	case TRANSACCIONES:
-		return ventas_menu();
-
+		printf("\nEn construccion!");
+		return false;
 	case CONSULTA_BALANCE:
-		return contabilidad_menu();
+		printf("\nEn construccion!");
+		return false;
 	case PAGO_PRESTAMO:
-		
-		break;
+		printf("\nEn construccion!");
+		return false;
 	case CAMBIO_MONEDA_EXTRANJERA:
-		
-		break;
+		printf("\nEn construccion!");
+		return false;
 	case GUARDAR_OBJETO:
-		
-		break;
+		printf("\nEn construccion!");
+		return false;
 	case SALIR:
 		fflush(stdout);
 		system("cls||clear");
@@ -171,12 +174,12 @@ int login_user()
 			   "\tOpcion: ");
 		scanf(" %d", &temp);
 		getchar();
-		
-		clear_screen()
 
-		/**Imprime al usuario q coga una opcion correcta. */
-		if (temp > 2)
-			printf("Por favor elige una opcion correta.\n");
+		clear_screen();
+
+			/**Imprime al usuario q coga una opcion correcta. */
+			if (temp > 2)
+				printf("Por favor elige una opcion correta.\n");
 	} while (temp > 2);
 
 	/**Dependiendo del valor en temp, el usuario se logeara o registrara. */
@@ -258,10 +261,6 @@ int login_user()
 
 void system_loading(int time)
 {
-#ifdef __WIN32
-	time += time * 1000;
-#endif //__WIN32
-
 	for (size_t i = 0; i <= 100; i++)
 	{
 		if (i % 25 == 0)
@@ -275,11 +274,10 @@ void system_loading(int time)
 
 		if (i == 100)
 		{
-			fflush(stdout);
-			system("cls||clear");
+			clear_screen();
 		};
 #ifdef __WIN32
-		Sleep(time);
+		Sleep(time * 1000);
 #else
 		sleep(time);
 #endif //__WIN32
