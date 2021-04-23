@@ -81,3 +81,24 @@ void show_client_status(struct Client *const self)
     self->base.available_cash = self->base.deposit_total +
                                 self->base.loan_total;
 }
+
+void make_transation(struct Client *const self)
+{
+    char line[sizeof(double)];
+    unsigned id;
+    double cash;
+
+    clear_screen();
+
+    printf("\t\aHola! Aca podras pasar dinero a otra persona.\n"
+           "\tPara ello deberas suministar el ID, y luego la cantidad a tranferir!\n"
+           "Ingresa el ID: ");
+    fgets(line, sizeof(line), stdin);
+    sscanf(line, "%u", &id);
+
+    printf("Ingresa la cantidad a tranferir: ");
+    fgets(line, sizeof(line), stdin);
+    sscanf(line, "%lf", &cash);
+
+    subtract_cash(self->id, id, cash);
+}

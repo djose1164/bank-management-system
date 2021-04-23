@@ -65,7 +65,7 @@ void new_loan(struct Client *const self);
  * en la database.
  * @return false La transaccion ha fallado.
  */
-bool make_transation();
+void make_transation(struct Client *const self);
 
 /**
  * @brief Muestra el status del usuario

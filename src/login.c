@@ -125,7 +125,7 @@ int login_menu()
 		new_loan(client);
 		return false;
 	case TRANSACCIONES:
-		printf("\nEn construccion!");
+		make_transation(client);
 		return false;
 	case CONSULTA_BALANCE:
 		printf("\nEn construccion!");
@@ -142,6 +142,7 @@ int login_menu()
 	case SALIR:
 		fflush(stdout);
 		system("cls||clear");
+		free(client);
 		printf("Hackear a la NASA dejo de ser un sueno.\n");
 		exit(0);
 	default:

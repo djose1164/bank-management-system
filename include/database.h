@@ -167,6 +167,6 @@ void *get_column_value(const unsigned id, const unsigned __request_value);
 void save_new_deposit(const unsigned id, const double cash);
 void save_new_loan(const unsigned id, const double cash);
 void save_new_loan();
-
+void subtract_cash(const unsigned from, const unsigned to, double cash);
 unsigned get_id(const char *username, const char *password);
 #endif // !DATABASE_H

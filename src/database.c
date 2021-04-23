@@ -358,6 +358,52 @@ void save_new_loan(const unsigned id, const double cash)
     //system("cls||clear");
 }
 
+void subtract_cash(const unsigned from, const unsigned to, double cash)
+{
+    __init_database__(database_name);
+
+    int conn;
+    char *sql = "UPDATE clients "
+                "SET deposit_total = deposit_total + ? "
+                "WHERE id = ? AND deposit_total > ?;";
+
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+    sqlite3_bind_double(res, 1, cash);
+    check_error(conn, db);
+    sqlite3_bind_int(res, 2, to);
+    check_error(conn, db);
+    sqlite3_bind_double(res, 3, from);
+    check_error(conn, db);
+
+    if (sqlite3_step(res) == SQLITE_DONE)
+    {
+        sqlite3_reset(res);
+        printf("Transaccion realizada con exito!\n");
+        sql = "UPDATE clients "
+              "SET deposit_total = deposit_total - ?"
+              "WHERE id = ?;";
+        conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+        sqlite3_bind_double(res, 1, cash);
+        sqlite3_bind_int(res, 2, from);
+
+        if (sqlite3_step(res) == SQLITE_DONE)
+        {
+            sqlite3_finalize(res);
+        }
+        else
+        {
+            fprintf(stderr, "Error on subtract_cash!\n");
+            exit(-1);
+            sqlite3_finalize(res);
+            sqlite3_close(db);
+        }
+        
+        
+    }else
+        printf("No se ha podido realizar la transaccion.\n");
+}
+
 int callback(void *data, int column_count, char **columns, char **columns_names)
 {
     if (temp)
