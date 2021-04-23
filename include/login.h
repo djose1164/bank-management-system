@@ -1,23 +1,26 @@
 /**
  * @file login.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author Jose S. Daniel (djose1164@gmail.com)
+ * @brief Header con las declaraciones y prototipos a implementar.
  * @version 0.1
- * @date 2021-04-06
+ * @date 2021-04-22
  * 
  * @copyright Copyright (c) 2021
  * 
  */
 
-#ifndef LOGIN_H //LOGIN_H
+#ifndef LOGIN_H
 #define LOGIN_H
 
 enum menu_option
 {
-    INVENTARIO = 1,
-    COMPRAS,
-    VENTAS,
-    CONTABILIDAD,
+    DEPOSITO = 1,
+    PRESTAMO,
+    TRANSACCIONES,
+    CONSULTA_BALANCE,
+    PAGO_PRESTAMO,
+    CAMBIO_MONEDA_EXTRANJERA,
+    GUARDAR_OBJETO,
     SALIR
 };
 
