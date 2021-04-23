@@ -1,3 +1,14 @@
+/**
+ * @file login.c
+ * @author Jose S. Daniel (djose1164@gmail.com)
+ * @brief Un login con dos funciones principales: registro y logeo de un usario
+ * y un menu principal de opciones.
+ * @version 0.1
+ * @date 2021-04-22
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,11 +33,25 @@ const short time = 1;
 
 void set_password(char *const password)
 {
+	/**
+	 * @brief Por cada letra que el usario escriba pone un asterisco.
+	 * Ej: Input:
+	 * 			djose1164
+	 *	  Output:
+	 *			********
+	 */
+
+	/**Variable donde se almacenara cada caracter leido. */
 	char c;
 	for (size_t i = 0; (c = getch()); ++i)
 	{
+		/**
+		 * @brief Muestra asterisco mintras c sea diferente a newline.
+		 * 
+		 */
 		if (c == '\n' || c == '\r')
 		{
+			/**Se a encontrado una newline; lo cambia por null character. */
 			password[i] = '\0';
 			return;
 		}
@@ -70,32 +95,43 @@ int login_menu()
 				   "Porque, pues te quedan %zu intentos.\n",
 				   i);
 
-		printf("\n\tSeleccione el modulo al que desea acceder:  \n"
-			   "\n\t1- Inventario \n"
-			   "\t2- Compras    \n"
-			   "\t3- Ventas     \n"
-			   "\t4- Contabilidad\n"
-			   "\t5- Salir \n"); // El usuario saldra cuando presione 5.
+		printf("\n\t\aQue quieres hacer? Ingresa el numero de la opcion deseada:  \n\n"
+			   "\t1- Realizar un deposito.\n"
+			   "\t2- Tomar un prestamo.\n"
+			   "\t3- Transacciones.\n"
+			   "\t4- Consulta de balance.\n"
+			   "\t5- Pago de prestamo.\n"
+			   "\t6- Cambio de moneda extranjera.\n"
+			   "\t7- Guardar un objeto.\n"
+			   "\t8- Salir.\n"); // El usuario saldra DEPOSITOcuando presione 5.
 		scanf(" %d", &options);
 		getchar();
 
-		if (options >= INVENTARIO && options <= SALIR)
+		if (options >= DEPOSITO && options <= SALIR)
 			break;
 	}
 
 	switch (options)
 	{
-	case INVENTARIO:
+	case DEPOSITO:
 		if (inventory_menu())
 			return login_menu();
-	case COMPRAS:
+	case PRESTAMO:
 		return compras_menu();
-	case VENTAS:
+	case TRANSACCIONES:
 		return ventas_menu();
 
-	case CONTABILIDAD:
+	case CONSULTA_BALANCE:
 		return contabilidad_menu();
-
+	case PAGO_PRESTAMO:
+		
+		break;
+	case CAMBIO_MONEDA_EXTRANJERA:
+		
+		break;
+	case GUARDAR_OBJETO:
+		
+		break;
 	case SALIR:
 		fflush(stdout);
 		system("cls||clear");
@@ -127,15 +163,16 @@ int login_user()
 	system_loading(time);
 	do
 	{ /**Mientras el usuario no entre una opcion valida el loop se repetira. */
-		printf("\n\t\t\t\aHaz ingresado a la plataforma de Colmado Hackeando la NASA\n"
-			   "\tSi ya estas registrado ingresa (2).\n"
-			   "\tSi eres nuevo ingresa (1).\n"
-			   "\t(1) Registrarse.\n"
-			   "\t(2) Logearse.\n"
+		printf("\n\t\t\t\aBienvenido al Banco Hackeando a la NASA!\n"
+			   "\tSi ya estas registrado ingresa 2.\n"
+			   "\tSi eres nuevo ingresa 1.\n"
+			   "\t1) Registrarse.\n"
+			   "\t2) Logearse.\n"
 			   "\tOpcion: ");
 		scanf(" %d", &temp);
 		getchar();
-		system("cls||clear");
+		
+		clear_screen()
 
 		/**Imprime al usuario q coga una opcion correcta. */
 		if (temp > 2)
@@ -173,7 +210,6 @@ int login_user()
 	case 2: // Logearse.
 		for (size_t i = 3; i > 0;)
 		{
-			// TODO: #13 falta un encabezado q le diga al usuario q hacer.
 			printf("\t\t\aHola! Estas actualmenteen en el login. Ingresa tus "
 				   "credenciales para poder ingresar al sistema!\n\n");
 
