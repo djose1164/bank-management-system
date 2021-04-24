@@ -40,6 +40,14 @@ enum return_validate
     not_found
 };
 
+enum
+{
+    COMPRAR = 1,
+    VENDER,
+    EUROS,
+    DOLARES
+};
+
 // Variables para el manejo de la base de datos.
 extern sqlite3 *db;
 extern sqlite3_stmt *res;
@@ -49,7 +57,7 @@ static int conn;
 // El limite de usario que podran register por ejecucion del programa.
 extern const size_t MAX_USERS;
 
-//! *-*-*-*-*-*-*- Metodos internos, no deberian modificarse sin saber SQL.*-*-*-*-*-*-*- 
+//! *-*-*-*-*-*-*- Metodos internos, no deberian modificarse sin saber SQL.*-*-*-*-*-*-*-
 /**
  * @brief Verifica que no haya error en la query.
  * En caso de lo que haya informara de ello y acabara la
@@ -120,7 +128,7 @@ static char *allocate_str(int len);
  */
 static void *__get_name__(const unsigned id);
 
-//! *-*-*-*-*-*-*- Metodos externos, pueden usarse sin problemas.*-*-*-*-*-*-*- 
+//! *-*-*-*-*-*-*- Metodos externos, pueden usarse sin problemas.*-*-*-*-*-*-*-
 /**
  * @brief Anade a un nuevo usario a la database.
  * 
@@ -170,4 +178,7 @@ void save_new_loan();
 void subtract_cash(const unsigned from, const unsigned to, double cash);
 unsigned get_id(const char *username, const char *password);
 bool payment(const unsigned id, const double cash);
+void buy_divisas(const unsigned id, const double amount, const double received,
+                 const unsigned option, const unsigned type);
+static void init_bank();
 #endif // !DATABASE_H
