@@ -71,7 +71,7 @@ void make_transation(struct Client *const self);
  * @brief Convierte de una divisa a otra.
  * 
  */
-void exchange_foreign_money();
+void exchange_foreign_money(struct Client *const self);
 
 /**
  * @brief Guarda un objeto del cliente en el banco.
@@ -80,5 +80,7 @@ void exchange_foreign_money();
 void save_object();
 
 void pay_loan(struct Client *const self);
+
+double convert(const double amount, const unsigned type);
 
 #endif //CLIENT_H

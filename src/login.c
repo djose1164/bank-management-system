@@ -76,82 +76,99 @@ void set_password(char *const password)
 
 // *-*-*-*-*-*-*-*-*-*-*-*- Login para el Menu *-*-*-*-*-*-*-*-*-*-*-*-
 
-int login_menu()
+void login_menu()
 {
 	/**Este es el inicio, luego de entrar al sistema */
 	unsigned options = 0;
 
-	clear_screen();
-
-	// Para que no se sienta la espera.
-	printf("Empezando sistema de carga...\n");
-	system_loading(time);
-
-	/**+-+-+-+-+-+-Empieza el menu+-+-+-+-+-+- */
-
-	// TODO: #14 Mejorar con un for y un contador de intentos.
-	for (size_t i = 3; i > 0 || options > 5; --i)
+	for (;;)
 	{
-		system("cls||clear");
+		clear_screen();
 
-		if ((options <= 0 && i != 3) || options > 5)
-			printf("Heyyy, debes eligir una opcion correcta!!!\n"
-				   "Porque, pues te quedan %zu intentos.\n",
-				   i);
+		// Para que no se sienta la espera.
+		printf("Empezando sistema de carga...\n");
+		system_loading(time);
 
-		printf("\n\t\t\aBienvenido al menu principal!\n"
-			   "\tQue quieres hacer? Ingresa el numero de la opcion deseada:  \n\n"
-			   "\t1- Realizar un deposito.\n"
-			   "\t2- Tomar un prestamo.\n"
-			   "\t3- Transacciones.\n"
-			   "\t4- Consulta de estado.\n"
-			   "\t5- Pago de prestamo.\n"
-			   "\t6- Cambio de moneda extranjera.\n"
-			   "\t7- Guardar un objeto.\n"
-			   "\t8- Salir.\n"); // El usuario saldra DEPOSITOcuando presione 5.
-		scanf(" %d", &options);
-		getchar();
+		/**+-+-+-+-+-+-Empieza el menu+-+-+-+-+-+- */
 
-		if (options >= DEPOSITO && options <= SALIR)
+		// TODO: #14 Mejorar con un for y un contador de intentos.
+		for (size_t i = 3; i > 0 || options > 5; --i)
+		{
+			system("cls||clear");
+
+			if ((options <= 0 && i != 3) || options > 5)
+				printf("Heyyy, debes eligir una opcion correcta!!!\n"
+					   "Porque, pues te quedan %zu intentos.\n",
+					   i);
+
+			printf("\n\t\t\aBienvenido al menu principal!\n"
+				   "\tQue quieres hacer? Ingresa el numero de la opcion deseada:  \n\n"
+				   "\t1- Realizar un deposito.\n"
+				   "\t2- Tomar un prestamo.\n"
+				   "\t3- Transacciones.\n"
+				   "\t4- Consulta de estado.\n"
+				   "\t5- Pago de prestamo.\n"
+				   "\t6- Cambio de moneda extranjera.\n"
+				   "\t7- Guardar un objeto.\n"
+				   "\t8- Salir.\n"); // El usuario saldra DEPOSITOcuando presione 5.
+			scanf(" %d", &options);
+			getchar();
+
+			if (options >= DEPOSITO && options <= SALIR)
+				break;
+		}
+
+		switch (options)
+		{
+		case DEPOSITO:
+			make_deposit(client);
+			getch();
+			continue;
+
+		case PRESTAMO:
+			new_loan(client);
+			getch();
+			continue;
+
+		case TRANSACCIONES:
+			make_transation(client);
+			getch();
+			continue;
+
+		case CONSULTA_BALANCE:
+			show_client_status(client);
+			getch();
+			continue;
+
+		case PAGO_PRESTAMO:
+			pay_loan(client);
+			getch();
+			continue;
+
+		case CAMBIO_MONEDA_EXTRANJERA:
+			exchange_foreign_money(client);
+			getch();
+			continue;
+
+		case GUARDAR_OBJETO:
+			printf("\nEn construccion!");
+			getch();
+			continue;
+
+		case SALIR:
+			fflush(stdout);
+			system("cls||clear");
+			free(client);
+			printf("Hackear a la NASA dejo de ser un sueno.\n");
+			exit(0);
+
+		default:
+			fprintf(stderr, "Verifica que hayas ingresado tus credenciales correctamente o "
+							"envia un issue detallando el posible bug.\n");
 			break;
+		}
+		putchar('\n');
 	}
-
-	switch (options)
-	{
-	case DEPOSITO:
-		make_deposit(client);
-		return false;
-	case PRESTAMO:
-		new_loan(client);
-		return false;
-	case TRANSACCIONES:
-		make_transation(client);
-		return false;
-	case CONSULTA_BALANCE:
-		show_client_status(client);
-		return false;
-	case PAGO_PRESTAMO:
-		pay_loan(client);
-		return false;
-	case CAMBIO_MONEDA_EXTRANJERA:
-		printf("\nEn construccion!");
-		return false;
-	case GUARDAR_OBJETO:
-		printf("\nEn construccion!");
-		return false;
-	case SALIR:
-		fflush(stdout);
-		system("cls||clear");
-		free(client);
-		printf("Hackear a la NASA dejo de ser un sueno.\n");
-		exit(0);
-	default:
-		fprintf(stderr, "Verifica que hayas ingresado tus credenciales correctamente o "
-						"envia un issue detallando el posible bug.\n");
-		break;
-	}
-	putchar('\n');
-	return 0;
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*- Login para el Menu de user *-*-*-*-*-*-*-*-*-*-*-*-
@@ -210,10 +227,7 @@ int login_user()
 		__init__(client, actual_user.username, actual_user.password,
 				 get_id(actual_user.username, actual_user.password));
 
-		// Luego entra en un blucle hasta que presione la letra de salir.
-		for (; login_menu();)
-			;
-
+		login_menu();
 		return 0;
 
 	case 2: // Logearse.
@@ -245,8 +259,7 @@ int login_user()
 			if (temp_validate)
 			// TODO: mostrar el login menu y/o mostrar un mensaje de que se ha logeado.
 			{
-				for (; login_menu();)
-					;
+				login_menu();
 				return 0;
 			}
 			else if (temp_validate == -1)

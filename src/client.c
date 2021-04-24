@@ -109,14 +109,90 @@ void pay_loan(struct Client *const self)
     double cash;
 
     clear_screen();
-    
+
     printf("\t\aHola! Aca podra pagar tus prestamos!\n"
            "Ingrese el monto a pagar: ");
     fgets(line, sizeof(line), stdin);
     sscanf(line, "%lf", &cash);
 
     if (payment(self->id, cash))
-        printf("TU pago se ha registrado con exito!\n");
+        printf("Tu pago se ha registrado con exito!\n");
     else
         fprintf(stderr, "No se ha podido realizar el pago.\n");
+}
+
+void exchange_foreign_money(struct Client *const self)
+{
+    char line[sizeof(unsigned)];
+    unsigned option = 0;
+    double amount;
+
+    do
+    {
+        clear_screen();
+        if (option != 0)
+            printf("Elige una opcion correcta!\n");
+
+        printf("\t\aHola! Aca podras realizar conversion entre divisas!\n"
+               "\t1) Comprar.\n"
+               "\t2) Vender.\n"
+               "\tOpcion: ");
+        fgets(line, sizeof(line), stdin);
+        sscanf(line, "%u", &option);
+
+    } while (option < 1 || option > 2);
+
+    /**Switch para el sub menu. */
+    switch (option)
+    {
+    case COMPRAR:
+        clear_screen();
+        printf("\t\aQue deseas comprar?\n"
+               "3) Euros.\n"
+               "4) Dolares.\n"
+               "Opcion: ");
+        fgets(line, sizeof(line), stdin);
+        sscanf(line, "%u", &option);
+
+        switch (option)
+        {
+            case EUROS:
+            clear_screen();
+            printf("\aIngrese la cantidad: ");
+            fgets(line, sizeof(line), stdin);
+            sscanf(line, "%lf", &amount);
+            buy_divisas(self->id, amount, convert(amount, EUROS), COMPRAR, EUROS);
+            break;
+        }
+        break;
+
+    case VENDER:
+        clear_screen();
+        printf("\t\aQue deseas vender?\n"
+               "1) Euros.\n"
+               "2) Dolares.\n"
+               "Opcion: ");
+        fgets(line, sizeof(line), stdin);
+        sscanf(line, "%u", &option);
+        break;
+
+    default:
+        clear_screen();
+        printf("Elige una opcion valida!\n");
+        break;
+    }
+}
+
+double convert(const double amount, const unsigned type)
+{
+    switch (type)
+    {
+    case DOLARES:
+        return (amount / 56.0);
+    case EUROS:
+        return (amount / 66.0);
+    default:
+        fprintf(stderr, "Opcion invalida\n");
+        break;
+    }
 }

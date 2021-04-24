@@ -46,7 +46,7 @@ struct actual_user
  * 
  * @return int Mientras sea 1 se ejectura, y si es 0 se parara.
  */
-int login_menu();
+void login_menu();
 
 /**
  * @brief Muestra las opciones para logearse o registrarse. 
