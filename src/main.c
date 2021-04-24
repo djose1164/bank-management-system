@@ -11,10 +11,17 @@
 /*  Fecha: 24/4/2021                                        */
 /************************************************************/
 
+/**
+ * @brief Main es solo usado para inicar la ejecucion del programa.
+ * 
+ * @param argc Numero de argv
+ * @param argv Los argumentos.
+ * @return int 0 si fue exitoso.
+ */
 int main(const unsigned argc, const char **argv)
 {
-		/**Inicia la ejecucion del programa. */
-		login_user();
+	/**Inicia la ejecucion del programa. */
+	login_user();
 
 	return (0);
 }
