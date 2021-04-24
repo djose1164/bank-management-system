@@ -21,6 +21,7 @@
 int main(const unsigned argc, const char **argv)
 {
 	/**Inicia la ejecucion del programa. */
+	clear_screen();
 	login_user();
 
 	return (0);
