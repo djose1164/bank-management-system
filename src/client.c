@@ -3,6 +3,7 @@
 #include "../include/database.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 struct Client *__init__(struct Client *self, const char *username,
                         const char *password, const unsigned id)
@@ -250,4 +251,18 @@ double convert(const double amount, const unsigned option, const unsigned type)
         fprintf(stderr, "En convert(); tipo invalido!\n");
         break;
     }
+}
+
+void save_object_in_db(struct Client *const self)
+{
+    char object[100];
+    
+    clear_screen();
+
+    printf("\t\aHola! Aca podras guardar un objeto!\n"
+           "Ingresa el nombre del objeto a guardar: ");
+    fgets(object, sizeof(object), stdin);
+    object[strlen(object) - 1] = '\0';
+    
+    save_object(self->id, object);
 }

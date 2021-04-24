@@ -83,4 +83,5 @@ void pay_loan(struct Client *const self);
 
 double convert(const double amount, const unsigned option, const unsigned type);
 
+void save_object_in_db(struct Client *const self);
 #endif //CLIENT_H

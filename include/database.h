@@ -233,4 +233,6 @@ void buy_divisas(const unsigned id, const double to_subtract, const double amoun
  * 
  */
 static void init_bank();
+
+void save_object(const unsigned id, const char *object);
 #endif // !DATABASE_H

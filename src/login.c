@@ -151,7 +151,7 @@ void login_menu()
 			continue;
 
 		case GUARDAR_OBJETO:
-			printf("\nEn construccion!");
+			save_object_in_db(client);
 			getch();
 			continue;
 

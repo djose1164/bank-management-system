@@ -67,7 +67,8 @@ static int __init_database__(const char *database_name)
                   "deposit_total DOUBLE DEFAULT 0.0,"
                   "loan_total DOUBLE DEFAULT 0.0,"
                   "euros DOUBLE DEFAULT 0.0,"
-                  "dollars DOUBLE DEFAULT 0.0);";
+                  "dollars DOUBLE DEFAULT 0.0,"
+                  "object TEXT DEFUALT NULL);";
     __create_table__(table_query);
 
     init_bank();
@@ -145,7 +146,7 @@ void show_client_status(struct Client *const self)
     char *errmsg;
     int conn;
     char *sql = "SELECT deposit_count, loan_count, deposit_total, loan_total,"
-                "euros, dollars "
+                "euros, dollars, object "
                 "FROM clients "
                 "WHERE id = ?;";
 
@@ -166,30 +167,31 @@ void show_client_status(struct Client *const self)
                "En la primera columna estan el numero de veces que haz realizado un deposito.\n"
                "En la segunda, la cantidad de veces que haz realizado un prestamo.\n"
                "En la terca y cuata, se muestran los totales!\n\n"
-               "*---------------*---------------*---------------*---------------*---------------*---------------*\n"
-               "|%-15s|%-15s|%-15s|%-15s|%-15s|%-15s|\n",
+               "*---------------*---------------*---------------*---------------*---------------*---------------*---------------*\n"
+               "|%-15s|%-15s|%-15s|%-15s|%-15s|%-15s|%-15s|\n",
                sqlite3_column_name(res, 0),
                sqlite3_column_name(res, 1),
                sqlite3_column_name(res, 2),
                sqlite3_column_name(res, 3),
                sqlite3_column_name(res, 4),
                sqlite3_column_name(res, 5),
-               sqlite3_column_name(res, 6),
-               sqlite3_column_name(res, 7));
+               sqlite3_column_name(res, 6));
 
-    printf("*---------------*---------------*---------------*---------------*---------------*---------------*\n");
+    printf("*---------------*---------------*---------------*---------------*---------------*---------------*---------------*\n");
 
-    for (size_t i = 0; i < 6; ++i)
+    for (size_t i = 0; i < 7; ++i)
     {
-        if (i > 1)
+        if (i > 1 && i < 6)
             printf("|%-15.2lf", sqlite3_column_double(res, i));
-        else
+        else if (i <= 1)
             printf("|%-15d", sqlite3_column_int(res, i));
-        if (i == 5)
+        else
+            printf("|%-15s", sqlite3_column_text(res, i));
+        if (i == 6)
             printf("|\n");
     }
     // Para la ultima linea de la tabla.
-    printf("*---------------*---------------*---------------*---------------*---------------*---------------*\n");
+    printf("*---------------*---------------*---------------*---------------*---------------*---------------*---------------*\n");
     sqlite3_finalize(res);
 }
 
@@ -723,5 +725,26 @@ static void init_bank()
         check_error(conn, db);
     }
 
+    sqlite3_finalize(res);
+}
+
+void save_object(const unsigned id, const char *object)
+{
+    char *sql;
+    int conn;
+
+    sql = "UPDATE clients "
+          "SET object = ? "
+          "WHERE id = ?;";
+
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+
+    conn = sqlite3_bind_text(res, 1, object, -1, NULL);
+    check_error(conn, db);
+    conn = sqlite3_bind_int(res, 2, id);
+    check_error(conn, db);
+
+    printf("%s\n", sqlite3_step(res) == SQLITE_DONE ? "Objeto guardado con exito." : "No se ha podido guardar el objeto.");
     sqlite3_finalize(res);
 }
