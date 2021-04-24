@@ -178,7 +178,7 @@ void save_new_loan();
 void subtract_cash(const unsigned from, const unsigned to, double cash);
 unsigned get_id(const char *username, const char *password);
 bool payment(const unsigned id, const double cash);
-void buy_divisas(const unsigned id, const double amount, const double received,
+void buy_divisas(const unsigned id, const double to_subtract, const double amount,
                  const unsigned option, const unsigned type);
 static void init_bank();
 #endif // !DATABASE_H

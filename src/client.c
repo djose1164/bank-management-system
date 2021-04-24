@@ -156,12 +156,25 @@ void exchange_foreign_money(struct Client *const self)
 
         switch (option)
         {
-            case EUROS:
+        case EUROS:
             clear_screen();
             printf("\aIngrese la cantidad: ");
             fgets(line, sizeof(line), stdin);
             sscanf(line, "%lf", &amount);
-            buy_divisas(self->id, amount, convert(amount, EUROS), COMPRAR, EUROS);
+            buy_divisas(self->id, amount, convert(amount, COMPRAR, EUROS), COMPRAR, EUROS);
+            break;
+
+        case DOLARES:
+            clear_screen();
+            printf("\aIngrese la cantidad: ");
+            fgets(line, sizeof(line), stdin);
+            sscanf(line, "%lf", &amount);
+            buy_divisas(self->id, amount, convert(amount, COMPRAR, DOLARES), COMPRAR, DOLARES);
+            break;
+
+        default:
+            clear_screen();
+            fprintf(stderr, "Elige una opcion valida!\n");
             break;
         }
         break;
@@ -169,30 +182,72 @@ void exchange_foreign_money(struct Client *const self)
     case VENDER:
         clear_screen();
         printf("\t\aQue deseas vender?\n"
-               "1) Euros.\n"
-               "2) Dolares.\n"
+               "3) Euros.\n"
+               "4) Dolares.\n"
                "Opcion: ");
         fgets(line, sizeof(line), stdin);
         sscanf(line, "%u", &option);
+
+        switch (option)
+        {
+        case EUROS:
+            clear_screen();
+            printf("\aIngrese la cantidad: ");
+            fgets(line, sizeof(line), stdin);
+            sscanf(line, "%lf", &amount);
+            buy_divisas(self->id, amount, convert(amount, VENDER, EUROS), VENDER, EUROS);
+            break;
+
+        case DOLARES:
+            clear_screen();
+            printf("\aIngrese la cantidad: ");
+            fgets(line, sizeof(line), stdin);
+            sscanf(line, "%lf", &amount);
+            buy_divisas(self->id, amount, convert(amount, VENDER, DOLARES), VENDER, DOLARES);
+            break;
+
+        default:
+            clear_screen();
+            fprintf(stderr, "Elige una opcion valida!\n");
+            break;
+        }
         break;
 
     default:
         clear_screen();
-        printf("Elige una opcion valida!\n");
+        fprintf(stderr, "Elige una opcion valida!\n");
         break;
     }
 }
 
-double convert(const double amount, const unsigned type)
+double convert(const double amount, const unsigned option, const unsigned type)
 {
-    switch (type)
+    switch (option)
     {
-    case DOLARES:
-        return (amount / 56.0);
-    case EUROS:
-        return (amount / 66.0);
+    case COMPRAR:
+        switch (type)
+        {
+        case DOLARES:
+            return (amount * 57.0);
+        case EUROS:
+            return (amount * 71.0);
+        default:
+            fprintf(stderr, "Opcion invalida\n");
+            break;
+        }
+    case VENDER:
+        switch (type)
+        {
+        case DOLARES:
+            return (amount * 56.0);
+        case EUROS:
+            return (amount * 66.0);
+        default:
+            fprintf(stderr, "Opcion invalida\n");
+            break;
+        }
     default:
-        fprintf(stderr, "Opcion invalida\n");
+        fprintf(stderr, "En convert(); tipo invalido!\n");
         break;
     }
 }

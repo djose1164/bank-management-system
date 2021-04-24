@@ -81,6 +81,6 @@ void save_object();
 
 void pay_loan(struct Client *const self);
 
-double convert(const double amount, const unsigned type);
+double convert(const double amount, const unsigned option, const unsigned type);
 
 #endif //CLIENT_H

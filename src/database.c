@@ -165,27 +165,31 @@ void show_client_status(struct Client *const self)
         printf("\t\aHola! Ahora mismo estas viendo el estado acutal de tu cuenta!\n\n"
                "En la primera columna estan el numero de veces que haz realizado un deposito.\n"
                "En la segunda, la cantidad de veces que haz realizado un prestamo.\n"
-               "Y por ultimo, en las dos ultimas columnas, se muestran los totales!\n\n"
-               "*---------------*---------------*---------------*---------------*\n"
-               "|%-15s|%-15s|%-15s|%-15s|\n",
+               "En la terca y cuata, se muestran los totales!\n\n"
+               "*---------------*---------------*---------------*---------------*---------------*---------------*\n"
+               "|%-15s|%-15s|%-15s|%-15s|%-15s|%-15s|\n",
                sqlite3_column_name(res, 0),
                sqlite3_column_name(res, 1),
                sqlite3_column_name(res, 2),
                sqlite3_column_name(res, 3),
                sqlite3_column_name(res, 4),
-               sqlite3_column_name(res, 5));
+               sqlite3_column_name(res, 5),
+               sqlite3_column_name(res, 6),
+               sqlite3_column_name(res, 7));
 
-    printf("*---------------*---------------*---------------*---------------*\n");
+    printf("*---------------*---------------*---------------*---------------*---------------*---------------*\n");
 
-    for (size_t i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 6; ++i)
     {
-        printf("|%-15s", sqlite3_column_text(res, i));
-
-        if (i == 3)
+        if (i > 1)
+            printf("|%-15.2lf", sqlite3_column_double(res, i));
+        else
+            printf("|%-15d", sqlite3_column_int(res, i));
+        if (i == 5)
             printf("|\n");
     }
     // Para la ultima linea de la tabla.
-    printf("*---------------*---------------*---------------*---------------*\n");
+    printf("*---------------*---------------*---------------*---------------*---------------*---------------*\n");
     sqlite3_finalize(res);
 }
 
@@ -241,34 +245,6 @@ bool update(const unsigned id, const char *new_name,
 */
     return false;
 }
-/*
-static bool __update_name__(const unsigned id, const char *new_name)
-{
-    int conn;
-    char *errmsg;
-    __init_database__(database_name);
-
-    if (new_name == NULL)
-        return false;
-
-    char *sql = "UPDATE products "
-                "SET nombre = ?"
-                "WHERE id = ?;";
-
-    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-    check_error(conn, db);
-
-    conn = sqlite3_bind_text(res, 1, new_name, -1, NULL);
-    check_error(conn, db);
-
-    conn = sqlite3_bind_int(res, 2, id);
-    check_error(conn, db);
-
-    conn = sqlite3_step(res);
-    sqlite3_finalize(res);
-    return conn == SQLITE_DONE;
-}
-*/
 
 //! Obtener valores.
 
@@ -456,7 +432,7 @@ bool payment(const unsigned id, const double cash)
     return status;
 }
 
-void buy_divisas(const unsigned id, const double amount, const double received,
+void buy_divisas(const unsigned id, const double amount, const double to_subtract,
                  const unsigned option, const unsigned type)
 {
     int conn;
@@ -490,13 +466,13 @@ void buy_divisas(const unsigned id, const double amount, const double received,
         conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
         check_error(conn, db);
 
-        conn = sqlite3_bind_double(res, 1, amount);
+        conn = sqlite3_bind_double(res, 1, to_subtract);
         check_error(conn, db);
         conn = sqlite3_bind_int(res, 2, id);
         check_error(conn, db);
-        conn = sqlite3_bind_double(res, 3, amount);
+        conn = sqlite3_bind_double(res, 3, to_subtract);
         check_error(conn, db);
-        conn = sqlite3_bind_int(res, 4, received);
+        conn = sqlite3_bind_int(res, 4, amount);
         check_error(conn, db);
 
         /**
@@ -522,7 +498,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                 check_error(conn, db);
 
-                conn = sqlite3_bind_double(res, 1, received);
+                conn = sqlite3_bind_double(res, 1, amount);
                 check_error(conn, db);
                 conn = sqlite3_bind_int(res, 2, id);
                 check_error(conn, db);
@@ -534,7 +510,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                           "SET available_cash_eur = available_cash_eur - ?;";
                     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                     check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, received);
+                    conn = sqlite3_bind_double(res, 1, amount);
                     check_error(conn, db);
                     if (sqlite3_step(res) == SQLITE_DONE)
                     {
@@ -560,7 +536,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                 check_error(conn, db);
 
-                conn = sqlite3_bind_double(res, 1, received);
+                conn = sqlite3_bind_double(res, 1, amount);
                 check_error(conn, db);
                 conn = sqlite3_bind_int(res, 2, id);
                 check_error(conn, db);
@@ -572,7 +548,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                           "SET available_cash_usd = available_cash_usd - ?;";
                     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                     check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, received);
+                    conn = sqlite3_bind_double(res, 1, amount);
                     check_error(conn, db);
                     if (sqlite3_step(res) == SQLITE_DONE)
                     {
@@ -591,6 +567,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 break;
 
             default:
+                fprintf(stderr, "\a\tTipo de divisa incorrecto!\n");
                 break;
             }
         }
@@ -604,13 +581,13 @@ void buy_divisas(const unsigned id, const double amount, const double received,
         conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
         check_error(conn, db);
 
-        conn = sqlite3_bind_double(res, 1, amount);
+        conn = sqlite3_bind_double(res, 1, to_subtract);
         check_error(conn, db);
-        conn = sqlite3_bind_int(res, 2, id);
+        conn = sqlite3_bind_double(res, 2, to_subtract);
         check_error(conn, db);
-        conn = sqlite3_bind_double(res, 3, amount);
+        conn = sqlite3_bind_int(res, 3, id);
         check_error(conn, db);
-        conn = sqlite3_bind_int(res, 4, received);
+        conn = sqlite3_bind_double(res, 4, amount);
         check_error(conn, db);
 
         /**
@@ -626,30 +603,31 @@ void buy_divisas(const unsigned id, const double amount, const double received,
             {
             case EUROS:
                 /**
-                 * Descuenta la divisa que se le dara del banco al cliente, y
-                 * esta misma se le agrega al cliente.
+                 * Descuenta la divisa que se le dara del cliente al banco, y
+                 * esta misma se le agrega al banco.
                  */
-                sql = "UPDATE clients "
-                      "SET euros = euros + ? "
-                      "WHERE id = ?;";
+                sql = "UPDATE bank "
+                      "SET available_cash_eur = available_cash_eur + ?;";
 
                 conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                 check_error(conn, db);
 
-                conn = sqlite3_bind_double(res, 1, received);
-                check_error(conn, db);
-                conn = sqlite3_bind_int(res, 2, id);
+                conn = sqlite3_bind_double(res, 1, amount);
                 check_error(conn, db);
 
                 if (sqlite3_step(res) == SQLITE_DONE)
                 {
                     sqlite3_reset(res);
-                    sql = "UPDATE bank "
-                          "SET available_cash_eur = available_cash_eur - ?;";
+                    sql = "UPDATE clients "
+                          "SET deposit_total = deposit_total + ?,"
+                          "deposit_count = deposit_count + 1 "
+                          "WHERE id = ?;";
                     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                     check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, received);
+
+                    conn = sqlite3_bind_double(res, 1, to_subtract);
                     check_error(conn, db);
+
                     if (sqlite3_step(res) == SQLITE_DONE)
                     {
                         printf("Las divisas se han agregado a tu cuenta!\n");
@@ -659,7 +637,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 }
                 else
                 {
-                    fprintf(stderr, "Error al comprar las divasas.\n");
+                    fprintf(stderr, "Error al vender las divasas.\n");
                     sqlite3_finalize(res);
                     sqlite3_close(db);
                     exit(-1);
@@ -667,14 +645,13 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 break;
 
             case DOLARES:
-                sql = "UPDATE clients "
-                      "SET dollars = dollars + ? "
-                      "WHERE id = ?;";
+                sql = "UPDATE bank "
+                      "SET available_cash_usd = available_cash_usd + ?;";
 
                 conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                 check_error(conn, db);
 
-                conn = sqlite3_bind_double(res, 1, received);
+                conn = sqlite3_bind_double(res, 1, amount);
                 check_error(conn, db);
                 conn = sqlite3_bind_int(res, 2, id);
                 check_error(conn, db);
@@ -682,11 +659,15 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 if (sqlite3_step(res) == SQLITE_DONE)
                 {
                     sqlite3_reset(res);
-                    sql = "UPDATE bank "
-                          "SET available_cash_usd = available_cash_usd - ?;";
+                    sql = "UPDATE clients "
+                          "SET deposit_total = deposit_total + ?,"
+                          "deposit_count = deposit_count + 1 "
+                          "WHERE id = ?;";
                     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                     check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, received);
+                    conn = sqlite3_bind_double(res, 1, to_subtract);
+                    check_error(conn, db);
+                    conn = sqlite3_bind_int(res, 2, id);
                     check_error(conn, db);
                     if (sqlite3_step(res) == SQLITE_DONE)
                     {
@@ -705,6 +686,7 @@ void buy_divisas(const unsigned id, const double amount, const double received,
                 break;
 
             default:
+                fprintf(stderr, "\a\tTipo de divisa incorrecto!\n");
                 break;
             }
         }
