@@ -20,19 +20,6 @@
 #include <stddef.h>
 #include "../include/client.h"
 
-/**Struct donde se almacenara los datos a guardar. Deberas pasar esto a su
- * debida funcion.
- */
-struct users_to_insert
-{
-    // Nombre del usuario a guardar.
-    char *username;
-    // Password del usuario a guardar.
-    char *password;
-    // Esta llena?
-    bool full;
-};
-
 enum return_validate
 {
     admin,
@@ -54,8 +41,6 @@ extern sqlite3_stmt *res;
 extern const char *database_name;
 static char *errmsg;
 static int conn;
-// El limite de usario que podran register por ejecucion del programa.
-extern const size_t MAX_USERS;
 
 //! *-*-*-*-*-*-*- Metodos internos, no deberian modificarse sin saber SQL.*-*-*-*-*-*-*-
 /**
@@ -98,17 +83,6 @@ static int __init_database__(const char *database_name);
  * @return false Si fallo.
  */
 static void __create_table__(const char *query);
-
-/**
- * IMPORTANT: Para uso interno.
- * 
- * @brief Funcion abstracta para complementar a otras o ser su base.
- * 
- * @param table_name El nombre de la tabla.
- * @param columns_name El nombre de la columna a la cual deseas agregar datos.
- * @param rows La cantidad de datos por fila 
- */
-void __insert_into__(struct Client *const self);
 
 /**
  * @brief Para uso interno.
@@ -155,16 +129,6 @@ extern int validate(const char *const username, const char *const password);
  * @return false 
  */
 bool update();
-
-/**
- * @brief Devolvera el valor de una columna. El retorna debe ser casteado con el
- * tipo de dato q desea.
- * 
- * @param id Obtendra el valor deseado del producto q tenga este ID.
- * @param __request_value Pasarse una opcion del enum __request_value
- * @return void* Un objeto q puede ser casteado a cualquier data type.
- */
-void *get_column_value(const unsigned id, const unsigned __request_value);
 
 /**
  * @brief Muestra el status del usuario
@@ -234,5 +198,11 @@ void buy_divisas(const unsigned id, const double to_subtract, const double amoun
  */
 static void init_bank();
 
+/**
+ * @brief Guarda un objeto del usario en la database.
+ * 
+ * @param id ID del cliente.
+ * @param object Nombre del objeto a guardar.
+ */
 void save_object(const unsigned id, const char *object);
 #endif // !DATABASE_H

@@ -1,9 +1,14 @@
 /**
  * @file database.c
- * @author @djose1164
- * @brief Implementacion/definicion del header database.h.
+ * @author Jose S. Daniel (djose1164@gmail.com)
+ * @brief Implementacion del header database.h.
+ * Aca se encuentra todas las implementaciones necesarias para el manejo
+ * dela database.
+ * @version 0.1
+ * @date 2021-04-24
  * 
- * @version 1.0
+ * @copyright Copyright (c) 2021
+ * 
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,32 +16,12 @@
 #include "../include/database.h"
 #include <string.h>
 
-static short counter;
 
 // Variables globales.
 sqlite3 *db;
 sqlite3_stmt *res = NULL;
-static bool temp = true;
 const char *database_name = "test.db";
 
-/**
- * @brief Habilita el suficiente espacion en memoria para los strings.
- * 
- * @param string El string que se va a guardar.
- * @return char* El return de la direccion de memoria.
- */
-
-char *allocate_str(int len)
-{
-    char *str = malloc(sizeof(char) * (len + 1));
-    if (!str)
-    {
-        fprintf(stderr, "Couldn't allocate the memory.\n");
-        exit(-1);
-    }
-
-    return str;
-}
 
 static void check_error(int conn, sqlite3 *db)
 {
@@ -230,61 +215,6 @@ void add_user(const char *username, const char *password)
     sqlite3_finalize(res);
 }
 
-//!-*-*-*-*-*-* Actualizar los datos -*-*-*-*-*-*
-
-bool update(const unsigned id, const char *new_name,
-            const unsigned *new_sellPrice, const int *new_availableQuantity)
-{
-    if (id <= 0)
-        return false;
-    /*
-    if (new_name)
-        return __update_name__(id, new_name);
-    else if (new_sellPrice)
-        return __update_price__(id, *new_sellPrice);
-    else if (new_availableQuantity)
-        return __update_quantity__(id, *new_availableQuantity);
-*/
-    return false;
-}
-
-//! Obtener valores.
-
-void *get_column_value(const unsigned id, const unsigned __request_value)
-{
-    __init_database__(database_name);
-    if (id <= 0)
-        return NULL;
-    /*
-    if (__request_value == NAME)
-        return __get_name__(id);
-    else if (__request_value == PRICE)
-        return __get_price__(id);
-    //else if (__request_value == QUANTITY)
-    //    return __get_quantity__(id);
-    else
-        return (void *)-1;
-        */
-}
-
-static void *__get_name__(const unsigned id)
-{
-    int conn;
-    char *str;
-    char *sql = "SELECT nombre "
-                "FROM products "
-                "WHERE id = ?;";
-    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-    check_error(conn, db);
-    conn = sqlite3_bind_int(res, 1, id);
-    check_error(conn, db);
-    conn = sqlite3_step(res);
-
-    str = conn == SQLITE_ROW ? (char *)sqlite3_column_text(res, 0) : NULL;
-    void *temp = (void *)str;
-    return temp;
-}
-
 unsigned get_id(const char *username, const char *password)
 {
     __init_database__(database_name);
@@ -329,6 +259,8 @@ void save_new_deposit(const unsigned id, const double cash)
     check_error(conn, db);
     sqlite3_bind_int(res, 2, id);
     check_error(conn, db);
+
+    system("cls||clear");
 
     conn = sqlite3_step(res);
     if (conn == SQLITE_DONE)
@@ -706,7 +638,7 @@ static void init_bank()
 
     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
     check_error(conn, db);
-    printf("## Before\n");
+
     if (!(sqlite3_step(res) == SQLITE_ROW))
     {
         sqlite3_reset(res);

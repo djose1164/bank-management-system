@@ -56,6 +56,6 @@ static void add_cash();
  * @brief Descuenta dinero. Esto sera registrado en la base de datos.
  * 
  */
-static void subtract_cash();
+void subtract_cash();
 
 #endif //BASE_H
