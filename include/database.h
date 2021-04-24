@@ -171,14 +171,66 @@ void *get_column_value(const unsigned id, const unsigned __request_value);
  * 
  */
 void show_client_status(struct Client *const self);
-
+/**
+ * @brief Guarda un nuevo deposito en el banco.
+ * 
+ * @param id ID del cliente.
+ * @param cash Dinero q va a depositar.
+ */
 void save_new_deposit(const unsigned id, const double cash);
+
+/**
+ * @brief Guarda el registo de un nuevo prestamo por parte del cliente.
+ * 
+ * @param id ID del cliente.
+ * @param cash Dinero que desea solicitar.
+ */
 void save_new_loan(const unsigned id, const double cash);
-void save_new_loan();
+
+/**
+ * @brief Resta dinero de un cliente para darselo a otro.
+ * 
+ * @param from ID del cliente quien esta dando el dinero.
+ * @param to ID del cliente que recibira el dinero
+ * @param cash El monto a dar/recibir.
+ */
 void subtract_cash(const unsigned from, const unsigned to, double cash);
+
+/**
+ * @brief Get the id object.
+ * 
+ * @param username Username del cliente.
+ * @param password password del cliente.
+ * @return unsigned ID del cliente.
+ */
 unsigned get_id(const char *username, const char *password);
+
+/**
+ * @brief Realiza el pago total o parcial de un prestamo.
+ * 
+ * @param id ID del cliente.
+ * @param cash Dinero a pagar.
+ * @return true Se pudo realizar el pago.
+ * @return false No se pudo realizar el pago.
+ */
 bool payment(const unsigned id, const double cash);
+
+/**
+ * @brief Para comprar o vender divisas. La funcion relizara las debidas
+ * operaciones para cada caso.
+ * 
+ * @param id ID del cliente realizando la operacion.
+ * @param to_subtract El valor retornado por convert(la conversion).
+ * @param amount La cantidad ingresada por el usuario.
+ * @param option Puede ser COMPRAR o VENDER.
+ * @param type Si es dolares o euros.
+ */
 void buy_divisas(const unsigned id, const double to_subtract, const double amount,
                  const unsigned option, const unsigned type);
+
+/**
+ * @brief Inicia el banco.
+ * 
+ */
 static void init_bank();
 #endif // !DATABASE_H
