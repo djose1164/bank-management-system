@@ -7,7 +7,7 @@
 /*  Nombre: Jose S. Daniel Victoriano Bello                 */
 /*  Matricula: 2020-10646                                   */
 /*  Seccion: Miercoles                                      */
-/*  Practica: Proyecto.                            			*/
+/*  Practica: Proyecto.                            	    */
 /*  Fecha: 24/4/2021                                        */
 /************************************************************/
 
