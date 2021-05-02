@@ -91,7 +91,6 @@ void login_menu()
 
 		/**+-+-+-+-+-+-Empieza el menu+-+-+-+-+-+- */
 
-		// TODO: #14 Mejorar con un for y un contador de intentos.
 		for (size_t i = 3; i > 0 || options > 5; --i)
 		{
 			system("cls||clear");
