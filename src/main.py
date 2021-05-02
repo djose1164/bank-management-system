@@ -1,15 +1,16 @@
-    """
-    Bank Management System by Lusecita.
-    
-    brief: Implementation of the functions from C; and the implementation of the
-    GUI.
-    
-    Copyright© 2021 Lusecita Malvadita.   
-    """
+"""
+Bank Management System by Lusecita.
+
+brief: Implementation of the functions from C; and the implementation of the
+GUI.
+
+Copyright© 2021 Lusecita Malvadita.   
+"""
 
 # Kivy modules.
 import kivy
 kivy.require("1.11.1")
+from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 # CPython.
 from ctypes import CDLL
@@ -35,9 +36,20 @@ class _ScreenManager(ScreenManager):
     pass
 
 # Used to run the program. This class must be one method (build) and return it.
-class MyApp(object):
+class MyApp(App):
     def build(self):
-        return
+        # A tuple with the different screens
+        screens = (
+            LoginScreen(name = "login"), 
+            MenuScreen(name = "menu"), 
+            TransactionScreen(name = "transaction")
+        )
+        # Create the screen manager.
+        sm = ScreenManager()
+        for i in screens:
+            sm.add_widget(i)
+        return sm
+        
        
 # Run the app.        
 if __name__ == "__main__":
