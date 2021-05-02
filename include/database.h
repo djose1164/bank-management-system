@@ -1,10 +1,12 @@
 /**
- * @file Database.h
- * @brief Prototipos y declaraciones para el manejo de la base de datos.
+ * @file database.h
+ * @author Jose S. Daniel (djose1164@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2021-05-01
  * 
- * IMPORTANT: No definar nada aca.
+ * @copyright Copyright (c) 2021
  * 
- * @author @djose1164
  */
 
 #ifndef DATABASE_H
@@ -36,12 +38,14 @@ enum
 };
 
 // Variables para el manejo de la base de datos.
-extern sqlite3 *db;
-extern sqlite3_stmt *res;
-extern const char *database_name;
-static char *errmsg;
-static int conn;
-
+struct Database
+{
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    const char *database_name;
+    char *errmsg;
+    int conn;
+};
 //! *-*-*-*-*-*-*- Metodos internos, no deberian modificarse sin saber SQL.*-*-*-*-*-*-*-
 /**
  * @brief Verifica que no haya error en la query.
@@ -75,14 +79,13 @@ static int __init_database__(const char *database_name);
 
 /**
  * @brief Crea una nueva tabla. Para ver como crear un tabla visita el siguiente link:
- * https://www.tutorialesprogramacionya.com/sqliteya/detalleconcepto.php?punto=67&codigo=67&inicio=60
  * El link fue escogido aleatoriamente. En caso de dudas ver YT o algo.
  * 
  * @param query Codigo SQL para crear la tabla.
  * @return true Si fue exitoso.
  * @return false Si fallo.
  */
-static void __create_table__(const char *query);
+static void create_table(const char *query);
 
 /**
  * @brief Para uso interno.

@@ -16,14 +16,16 @@
 #include "../include/database.h"
 #include <string.h>
 
-
 // Variables globales.
 sqlite3 *db;
 sqlite3_stmt *res = NULL;
 const char *database_name = "test.db";
 
+/*****************************************************************************/
+/* Private functions:                                                        */
+/*****************************************************************************/
 
-static void check_error(int conn, sqlite3 *db)
+static inline void check_error(int conn, sqlite3 *db)
 {
     if (conn != SQLITE_OK)
     {
@@ -54,7 +56,7 @@ static int __init_database__(const char *database_name)
                   "euros DOUBLE DEFAULT 0.0,"
                   "dollars DOUBLE DEFAULT 0.0,"
                   "object TEXT DEFUALT NULL);";
-    __create_table__(table_query);
+    create_table(table_query);
 
     init_bank();
     return 0;
@@ -64,11 +66,13 @@ static int __init_database__(const char *database_name)
     return -1;
 }
 
-static void __create_table__(const char *query)
+static inline void create_table(const char *query)
 {
-    char *errmsg;
-    int conn = sqlite3_exec(db, query, 0, 0, &errmsg);
-    check_error(conn, db);
+    /**
+     * @brief Luego de intentar crear la tabla verifica que el retorna no sea un error.
+     * Si lo es el programa se terminara.
+     */
+    check_error(sqlite3_exec(db, query, 0, 0, NULL), db);
 }
 
 static int __validate__(const char *const username, const char *const password)
@@ -647,7 +651,7 @@ static void init_bank()
                       "available_cash_dop DOUBLE DEFAULT 100000.00,"
                       "available_cash_usd DOUBLE DEFAULT 100000.00,"
                       "available_cash_eur DOUBLE DEFAULT 100000.00);";
-        __create_table__(table_query);
+        create_table(table_query);
 
         /**Agrega dinero al banco. */
         char *sql = "INSERT INTO bank("
