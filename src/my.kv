@@ -10,11 +10,13 @@ _ScreenManager:
 # lbl_ means label_
 
 <TextInput>:
-    size_hint_y: .05
     multiline: False
     focus: True
     halign: "center"
     write_tab: False
+
+<Password@TextInput>
+    password: True
 
 <MyLabel@Label>
     bold: True
@@ -24,6 +26,9 @@ _ScreenManager:
 # Sign up and Log in will be buttons to go to another screen.
 # The welcome just a label telling some like instructions (?
 <LoginScreen>
+    # ids
+    username: txtipt_username
+    password: txtipt_pass
     # Root layout.
     BoxLayout:
         orientation: "vertical"
@@ -53,22 +58,24 @@ _ScreenManager:
         # To display the inputs and labels for entry data.
         BoxLayout:
             orientation: "vertical"
-            padding: 90, 150
-            spacing: 0, 0
+            padding: 50
+            spacing: 50
 
             MyLabel:
                 text: "Username:"
-                size_hint_y: .05
+                size_hint_y: .1
 
             TextInput:
+               
                 id: txtipt_username
                 hint_text: "Type your username..."
                 
             MyLabel: 
                 text: "Password:"
-                size_hint_y: .05
+                size_hint_y: .1
 
-            TextInput:
+            Password:
+            
                 id: txtipt_pass
                 hint_text: "Type your password..."
                 password: True
@@ -79,7 +86,7 @@ _ScreenManager:
             spacing: 20
             # Set the distance between the border and childs to 40.
             padding: 10
-            size_hint_y: .1
+            size_hint_y: .2
 
             Button:
                 text: "Login"
@@ -91,9 +98,53 @@ _ScreenManager:
                 
             
 <SignupScreen>
+    # Bind ids.
+    username: txtipt_username
+    password: txtipt_password
+
+    # Root layout.
     BoxLayout:
+        orientation: "vertical"
+        spacing: 20
+        padding: 20
+
         Label:
-            text: "Sign Up"
+            text: "Registration!"
+            font_size: 36
+            bold: True
+
+        # Layout for username entry.
+        BoxLayout:
+            spacing: 20
+            padding: 20
+
+            Label:
+                text: "Username:"
+            TextInput:
+                id: txtipt_username
+                hint_text: "Type your new username..."
+
+        # Layout for password entry
+        BoxLayout:
+            spacing: 20
+            padding: 20
+            Label:
+                text: "Password:"
+            Password:
+                id: txtipt_password
+                hint_text: "Type your new password..."
+
+        # Layout for buttons
+        BoxLayout:
+            spacing: 20
+            padding: 20
+            Button:
+                text: "Sign up!"
+                on_press: root.add_new_user()
+
+            Button:
+                text: "Go back!"
+                on_press: root.manager.current = "login"    
 
 <MenuScreen>
     BoxLayout:
