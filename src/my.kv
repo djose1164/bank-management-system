@@ -1,18 +1,107 @@
 #:kivy 1.11.1
 
-<LoginScreen>:
+_ScreenManager:
+    LoginScreen:
+    SignupScreen:
+    MenuScreen:
+    TransactionScreen:
+
+# txtipt_ means textinput_
+# lbl_ means label_
+
+<TextInput>:
+    size_hint_y: .05
+    multiline: False
+    focus: True
+    halign: "center"
+    write_tab: False
+
+<MyLabel@Label>
+    bold: True
+    font_size: 25
+
+# In this the user will see the following options: Sign up, Log in, and a welcome.
+# Sign up and Log in will be buttons to go to another screen.
+# The welcome just a label telling some like instructions (?
+<LoginScreen>
+    # Root layout.
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 0, 0
+
+        # To display the name app and copyright
+        BoxLayout:
+            padding: 0
+            spacing: 10
+            size_hint_y: .045
+                
+            Label:
+                id: name_app
+                text_size: self.size
+                pos_hint_y: None
+                pos_y: 50
+                font_size: 16
+                text: "Bank Management System by Lusecita"
+                halign: "justify"
+            
+            Label:
+                font_size: 16
+                text_size: self.size
+                text: "Copyright© 2021 Lusecita Malvadita."
+                halign: "right"
+
+        # To display the inputs and labels for entry data.
+        BoxLayout:
+            orientation: "vertical"
+            padding: 90, 150
+            spacing: 0, 0
+
+            MyLabel:
+                text: "Username:"
+                size_hint_y: .05
+
+            TextInput:
+                id: txtipt_username
+                hint_text: "Type your username..."
+                
+            MyLabel: 
+                text: "Password:"
+                size_hint_y: .05
+
+            TextInput:
+                id: txtipt_pass
+                hint_text: "Type your password..."
+                password: True
+
+        # Button login layout.
+        BoxLayout:
+            # Set the space to 40 between childs.
+            spacing: 20
+            # Set the distance between the border and childs to 40.
+            padding: 10
+            size_hint_y: .1
+
+            Button:
+                text: "Login"
+                on_press: root.login()
+
+            Button:
+                text: "Sign Up"
+                on_press: root.sign_up()
+                
+            
+<SignupScreen>
     BoxLayout:
         Label:
-            id: lbl
-            text: "Login"
+            text: "Sign Up"
 
-<MenuScreen>:
+<MenuScreen>
     BoxLayout:
         Label:
             id: lbl_menu
             text: "Menu"
 
-<TransactionScreen>:
+<TransactionScreen>
     Label:
         id: lbl_transaction
         text: "Transaction"
