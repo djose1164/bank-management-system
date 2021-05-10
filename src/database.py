@@ -20,16 +20,24 @@ class Database:
                     username CHAR(20), 
                     password CHAR(20))
                     """
-        self._conn = sqlite3.connect(self._database_name)
         self.create_table(table)
 
-    def see(self):
-        cur = self._conn.cursor()
-        try:
-            cur.execute("SELECT * FROM users")
-            print(cur.fetchall())
-        except Exception as e:
-            raise e
+    def load_id(self):
+        """Return the loaded data from database.
+
+        Raises:
+            e: Error that happened trying to fetch data.
+
+        Returns:
+            dict: The dict with the fetched data.
+        """
+        with sqlite3.connect(self._database_name) as conn:
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT id FROM users")
+                return cur.fetchall()[0]
+            except Exception as e:
+                raise e
 
     def create_table(self, sql: str):
         """Create a table with the given sql statement.
@@ -40,11 +48,12 @@ class Database:
         Raises:
             e: The error cought.
         """
-        cur = self._conn.cursor()
-        try:
-            cur.execute(sql)
-        except Exception as e:
-            raise e
+        with sqlite3.connect(self._database_name) as conn:
+            try:
+                cur = conn.cursor()
+                cur.execute(sql)
+            except Exception as e:
+                raise e
 
     def create_new_user(self, username: str, password: str):
         """To create a new user inside the database.
@@ -54,39 +63,60 @@ class Database:
             password (str): The new user's password.
         """
         sql = "INSERT INTO users VALUES(NULL, ?, ?)"
-        cur = self._conn.cursor()
-        try:
-            cur.execute(
-                sql,
-                (
-                    username,
-                    password,
-                ),
-            )
-            return True
-        except Exception as e:
-            print(f"## create_new_user(): {e}")
-            return False
+        with sqlite3.connect(self._database_name) as conn:
+            try:
+                cur = conn.cursor()
+                cur.execute(
+                    sql,
+                    (
+                        username,
+                        password,
+                    ),
+                )
+                return True
+            except Exception as e:
+                print(f"## create_new_user(): {e}")
+                return False
 
     def validate_user(self, username: str, password: str):
         sql = """
               SELECT username, password
               FROM users
               """
-        cur = self._conn.cursor()
-        try:
-            cur.execute(sql)
-            data = cur.fetchall()
-            # Check is the username and password are in the given data.
-            for usrname, psswd in data:
-                if username == usrname and password == psswd:
-                    return True
-                else:
-                    return False
-        except Exception as e:
-            pass
+        with sqlite3.connect(self._database_name) as conn:
+            try:
+                cur = conn.cursor()
+                cur.execute(sql)
+                data = cur.fetchall()
+                # Check is the username and password are in the given data.
+                for usrname, psswd in data:
+                    if username == usrname and password == psswd:
+                        return True
+                    else:
+                        return False
+            except Exception as e:
+                pass
+    
+    def see(self):
+        with sqlite3.connect(self._database_name) as conn:
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM users")
+                print(cur.fetchall())
+            except Exception as e:
+                raise e
+            
 
 
-db = Database()
+db = None
 
-# initialize_database()
+
+def main():
+    """Instantiace db (Database class) object"""
+    global db
+    db = Database()
+    db.see()
+    
+if __name__ == '__main__':
+    main()
+    
