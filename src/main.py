@@ -14,33 +14,36 @@ from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty
-from database import db
-
-# CPython.
-from ctypes import CDLL
+import database
+from database import main
 
 
-# This' the first screen (1)
-# This screen will display the login. Both, signup and login options.
 class LoginScreen(Screen):
+    """This' the first screen (1)
+    This screen will display the login. Both, signup and login options.
+
+    Args:
+        Screen (Screen): A new window.
+    """
+
     username = ObjectProperty(None)
     password = ObjectProperty(None)
 
     def login(self):
-        if db.validate_user(self.username.text, self.password.text):
+        # If True, go to menu screen, otherwise show a popup.
+        if database.db.validate_user(self.username.text, self.password.text):
+            sm.transition.direction = "up"
             sm.current = "menu"
         else:
-            popup = Popup(
-                title="Error!",
-                content=Label(
-                    text="Ups! It seems like you haven't created any "
-                    + "account yet\nTry to create a new one first!"
-                ),
-                size_hint=(0.5, 0.4),
+            popup_msg(
+                msg="Ups! It seems like you haven't created any "
+                + "account yet\nTry to create a new one first!",
+                status=False,
             )
-            popup.open()
 
     def sign_up(self):
+        """Go to sign up screen."""
+        sm.transition.direction = "right"
         sm.current = "sign_up"
 
 
@@ -56,30 +59,17 @@ class SignupScreen(Screen):
     password = ObjectProperty(None)
 
     def add_new_user(self):
-        if db.create_new_user(self.username.text, self.password.text):
-            popup = Popup(
-                title="Done!",
-                content=Label(text="User created succefully!", bold=True),
-                size_hint=(0.5, 0.4),
-                on_dismiss = self.go_to_menu
+        if database.db.create_new_user(self.username.text, self.password.text):
+            popup_msg(func=self.go_to_menu, msg="User created successfully!")
+        else:
+            popup_msg(
+                msg="Ups! We've caught a bug!\nPlease send an issue with"
+                + " an extend description of this annoying bug!",
+                status=False,
             )
 
-            popup.open()
-        else:
-            Popup(
-                title="Error!",
-                content=Label(
-                    text="Ups! We've caught a bug!\nPlease send an issue with"
-                    + " an extend description of this annoying bug!",
-                    italic=True,
-                    font_size=20,
-                    halign="justify",
-                ),
-                size_hint=(0.8, 0.5),
-            ).open()
-            
-    def go_to_menu(self, instance):
-        print(f"{instance}")
+    def go_to_menu(self, *args):
+        sm.transition.direction = "up"
         sm.current = "menu"
 
 
@@ -120,7 +110,41 @@ class MyApp(App):
         return sm
 
 
+def popup_msg(
+    func=None, msg: str = "Ups! A bug caught!", status: bool = True, *args, **kwargs
+):
+    if status:
+        popup_title = "Done!"
+    else:
+        popup_title = "Error!"
+
+    lbl = Label(
+        text=msg,
+        italic=True,
+        font_size=20,
+        halign="justify",
+    )
+    title_size = 20
+    title_align = "center"
+    title_color = "red"
+
+    popup = Popup(
+        title=popup_title,
+        content=lbl,
+        title_size=title_size,
+        size_hint=(0.8, 0.35),
+        title_align=title_align,
+        title_color="green",
+    )
+    if func:
+        popup.bind(on_dismiss=func)
+
+    popup.open()
+
+
 # Run the app.
 if __name__ == "__main__":
+    main()
+    print(f"## In main {database.db}")
     app = MyApp()
     app.run()
