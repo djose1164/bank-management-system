@@ -36,7 +36,7 @@ static inline void check_error(int conn, sqlite3 *db)
     }
 }
 
-static int __init_database__(const char *database_name)
+static inline int init_database(const char *database_name)
 {
     char *table_query;
 #ifndef CONNECTED
@@ -75,11 +75,11 @@ static inline void create_table(const char *query)
     check_error(sqlite3_exec(db, query, 0, 0, NULL), db);
 }
 
-static int __validate__(const char *const username, const char *const password)
+static int validate(const char *const username, const char *const password)
 {
     char *errmsg;
     int conn;
-    __init_database__(database_name);
+    init_database(database_name);
 
     // Array de punteros a los datos a validar.2
     const char *to_validate[] = {
@@ -87,11 +87,11 @@ static int __validate__(const char *const username, const char *const password)
         password};
 
     // Array de punteros para la consulta. Solo cambiar si tenes conocimiento de SQL.
-    char *queries = {
+    char *queries =
         "SELECT username, password "
         "FROM clients "
         "WHERE username = ? AND "
-        "password = ?;"};
+        "password = ?;";
 
     // Prepara la coneccion.
     conn = sqlite3_prepare_v2(db, queries, -1, &res, NULL);
@@ -106,9 +106,7 @@ static int __validate__(const char *const username, const char *const password)
         check_error(conn, db);
     }
 
-    int step;
-
-    if ((step = sqlite3_step(res)) != SQLITE_ROW)
+    if (sqlite3_step(res) != SQLITE_ROW)
     {
         sqlite3_finalize(res);
         sqlite3_close(db);
@@ -119,19 +117,15 @@ static int __validate__(const char *const username, const char *const password)
         sqlite3_finalize(res);
         return true;
     }
-    return -1;
-}
 
-int validate(const char *username, const char *password)
-{
-    return __validate__(username, password);
+    return -1;
 }
 
 //! Realizar una consulta.
 
 void show_client_status(struct Client *const self)
 {
-    __init_database__(database_name);
+    init_database(database_name);
     char *errmsg;
     int conn;
     char *sql = "SELECT deposit_count, loan_count, deposit_total, loan_total,"
@@ -188,10 +182,11 @@ void show_client_status(struct Client *const self)
 
 void add_user(const char *username, const char *password)
 {
-    __init_database__(database_name);
+    init_database(database_name);
 
     char *sql;
     char *table_query;
+    int conn;
     const char *data[] = {
         username,
         password};
@@ -221,7 +216,7 @@ void add_user(const char *username, const char *password)
 
 unsigned get_id(const char *username, const char *password)
 {
-    __init_database__(database_name);
+    init_database(database_name);
 
     int conn;
     unsigned temp;
@@ -231,10 +226,12 @@ unsigned get_id(const char *username, const char *password)
                 "password = ?;";
     conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
     check_error(conn, db);
-    conn = sqlite3_bind_text(res, 1, username, -1, NULL);
-    check_error(conn, db);
-    conn = sqlite3_bind_text(res, 2, password, -1, NULL);
-    check_error(conn, db);
+    for (size_t i = 1; i < 3; ++i)
+    {
+        conn = sqlite3_bind_text(res, i, username, -1, NULL);
+        check_error(conn, db);
+    }
+
     conn = sqlite3_step(res);
 
     temp = conn == SQLITE_ROW ? sqlite3_column_int(res, 0) : 0;
@@ -248,7 +245,7 @@ void save_new_deposit(const unsigned id, const double cash)
     int conn;
 
     /**Establece y/o crea la database. */
-    __init_database__(database_name);
+    init_database(database_name);
 
     /**Consulta.*/
     sql = "UPDATE clients "
@@ -281,7 +278,7 @@ void save_new_loan(const unsigned id, const double cash)
     int conn;
 
     /**Establece y/o crea la database. */
-    __init_database__(database_name);
+    init_database(database_name);
 
     /**Consulta.*/
     sql = "UPDATE clients "
@@ -308,7 +305,7 @@ void save_new_loan(const unsigned id, const double cash)
 
 void subtract_cash(const unsigned from, const unsigned to, double cash)
 {
-    __init_database__(database_name);
+    init_database(database_name);
 
     int conn;
     char *sql = "UPDATE clients "
@@ -333,7 +330,9 @@ void subtract_cash(const unsigned from, const unsigned to, double cash)
               "WHERE id = ?;";
         conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
         sqlite3_bind_double(res, 1, cash);
+        check_error(conn, db);
         sqlite3_bind_int(res, 2, from);
+        check_error(conn, db);
 
         if (sqlite3_step(res) == SQLITE_DONE)
         {
@@ -348,7 +347,9 @@ void subtract_cash(const unsigned from, const unsigned to, double cash)
         }
     }
     else
+    {
         printf("No se ha podido realizar la transaccion.\n");
+    }
 }
 
 bool payment(const unsigned id, const double cash)
@@ -375,6 +376,10 @@ void buy_divisas(const unsigned id, const double amount, const double to_subtrac
 {
     int conn;
     char *sql;
+    void buy(const unsigned id, const double amount, const double to_subtract,
+             const unsigned option, const unsigned type);
+    void sell(const unsigned id, const double amount, const double to_subtract,
+              const unsigned option, const unsigned type);
 
     /**
      * @brief Primero, se verifica que haya suficiente dinero en el barco para
@@ -382,6 +387,7 @@ void buy_divisas(const unsigned id, const double amount, const double to_subtrac
      * de las divisas. En la compra, se verificara que el usuario tiene suficiente
      * dinero, si lo tiene se le descontara lo necesario y el banco le dara la 
      * divisa.
+     * 
      * La divisa que el banco de sera restada del banco.
      * Para la venta, primero se verifica q el banco tiene suficiente dinero
      * para adquirir la divisa, si lo tiene se le dara dado el dinero al usuario
@@ -391,244 +397,262 @@ void buy_divisas(const unsigned id, const double amount, const double to_subtrac
     switch (option)
     {
     case COMPRAR:
-        /**
-         * @brief Verifica q el banco y el cliente tienen fundos suficientes para
-         * la operacion; si cuentan con el saldo suficiente, se le descuenta
-         * al cliente.
-         * 
-         */
-        sql = "UPDATE clients "
-              "SET deposit_total = deposit_total - ? "
-              "WHERE id = ? AND deposit_total > ? AND "
-              "(SELECT available_cash_eur FROM bank) > ?;";
-        conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-        check_error(conn, db);
-
-        conn = sqlite3_bind_double(res, 1, to_subtract);
-        check_error(conn, db);
-        conn = sqlite3_bind_int(res, 2, id);
-        check_error(conn, db);
-        conn = sqlite3_bind_double(res, 3, to_subtract);
-        check_error(conn, db);
-        conn = sqlite3_bind_int(res, 4, amount);
-        check_error(conn, db);
-
-        /**
-         * @brief Si se pudo restar el dinero necesario del client entonces
-         * se continua con la transferencia de la divisa: desde el banco 
-         * al cliente.
-         * 
-         */
-        if ((sqlite3_step(res) == SQLITE_DONE))
-        {
-            sqlite3_reset(res);
-            switch (type)
-            {
-            case EUROS:
-                /**
-                 * Descuenta la divisa que se le dara del banco al cliente, y
-                 * esta misma se le agrega al cliente.
-                 */
-                sql = "UPDATE clients "
-                      "SET euros = euros + ? "
-                      "WHERE id = ?;";
-
-                conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-                check_error(conn, db);
-
-                conn = sqlite3_bind_double(res, 1, amount);
-                check_error(conn, db);
-                conn = sqlite3_bind_int(res, 2, id);
-                check_error(conn, db);
-
-                if (sqlite3_step(res) == SQLITE_DONE)
-                {
-                    sqlite3_reset(res);
-                    sql = "UPDATE bank "
-                          "SET available_cash_eur = available_cash_eur - ?;";
-                    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-                    check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, amount);
-                    check_error(conn, db);
-                    if (sqlite3_step(res) == SQLITE_DONE)
-                    {
-                        printf("Las divisas se han agregado a tu cuenta!\n");
-                        sqlite3_finalize(res);
-                        return;
-                    }
-                }
-                else
-                {
-                    fprintf(stderr, "Error al comprar las divasas.\n");
-                    sqlite3_finalize(res);
-                    sqlite3_close(db);
-                    exit(-1);
-                }
-                break;
-
-            case DOLARES:
-                sql = "UPDATE clients "
-                      "SET dollars = dollars + ? "
-                      "WHERE id = ?;";
-
-                conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-                check_error(conn, db);
-
-                conn = sqlite3_bind_double(res, 1, amount);
-                check_error(conn, db);
-                conn = sqlite3_bind_int(res, 2, id);
-                check_error(conn, db);
-
-                if (sqlite3_step(res) == SQLITE_DONE)
-                {
-                    sqlite3_reset(res);
-                    sql = "UPDATE bank "
-                          "SET available_cash_usd = available_cash_usd - ?;";
-                    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-                    check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, amount);
-                    check_error(conn, db);
-                    if (sqlite3_step(res) == SQLITE_DONE)
-                    {
-                        printf("Las divisas se han agregado a tu cuenta!\n");
-                        sqlite3_finalize(res);
-                        return;
-                    }
-                }
-                else
-                {
-                    fprintf(stderr, "Error al comprar las divasas.\n");
-                    sqlite3_finalize(res);
-                    sqlite3_close(db);
-                    exit(-1);
-                }
-                break;
-
-            default:
-                fprintf(stderr, "\a\tTipo de divisa incorrecto!\n");
-                break;
-            }
-        }
+        buy(id, amount, to_subtract, option, type);
         break;
 
     case VENDER:
-        sql = "UPDATE bank "
-              "SET available_cash_dop = available_cash_dop - ? "
-              "WHERE available_cash_dop > ? AND "
-              "(SELECT euros FROM clients Where id = ?) > ?;";
-        conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-        check_error(conn, db);
+        sell(id, amount, to_subtract, option, type);
+        break;
+    }
+}
 
-        conn = sqlite3_bind_double(res, 1, to_subtract);
-        check_error(conn, db);
-        conn = sqlite3_bind_double(res, 2, to_subtract);
-        check_error(conn, db);
-        conn = sqlite3_bind_int(res, 3, id);
-        check_error(conn, db);
-        conn = sqlite3_bind_double(res, 4, amount);
-        check_error(conn, db);
+void sell(const unsigned id, const double amount, const double to_subtract,
+          const unsigned option, const unsigned type)
+{
+    char *sql;
+    int conn;
 
-        /**
-         * @brief Si se pudo restar el dinero necesario del client entonces
-         * se continua con la transferencia de la divisa: desde el banco 
-         * al cliente.
-         * 
-         */
-        if ((sqlite3_step(res) == SQLITE_DONE))
+    sql = "UPDATE bank "
+          "SET available_cash_dop = available_cash_dop - ? "
+          "WHERE available_cash_dop > ? AND "
+          "(SELECT euros FROM clients Where id = ?) > ?;";
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+
+    conn = sqlite3_bind_double(res, 1, to_subtract);
+    check_error(conn, db);
+    conn = sqlite3_bind_double(res, 2, to_subtract);
+    check_error(conn, db);
+    conn = sqlite3_bind_int(res, 3, id);
+    check_error(conn, db);
+    conn = sqlite3_bind_double(res, 4, amount);
+    check_error(conn, db);
+
+    /**
+     * @brief Si se pudo restar el dinero necesario del client entonces
+     * se continua con la transferencia de la divisa: desde el banco 
+     * al cliente.
+     * 
+     */
+    if ((sqlite3_step(res) == SQLITE_DONE))
+    {
+        sqlite3_reset(res);
+        switch (type)
         {
-            sqlite3_reset(res);
-            switch (type)
-            {
-            case EUROS:
-                /**
-                 * Descuenta la divisa que se le dara del cliente al banco, y
-                 * esta misma se le agrega al banco.
-                 */
-                sql = "UPDATE bank "
-                      "SET available_cash_eur = available_cash_eur + ?;";
+        case EUROS:
+            /**
+             * Descuenta la divisa que se le dara del cliente al banco, y
+             * esta misma se le agrega al banco.
+             */
+            sql = "UPDATE bank "
+                  "SET available_cash_eur = available_cash_eur + ?;";
 
+            conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+            check_error(conn, db);
+
+            conn = sqlite3_bind_double(res, 1, amount);
+            check_error(conn, db);
+
+            if (sqlite3_step(res) == SQLITE_DONE)
+            {
+                sqlite3_reset(res);
+                sql = "UPDATE clients "
+                      "SET deposit_total = deposit_total + ?,"
+                      "deposit_count = deposit_count + 1 "
+                      "WHERE id = ?;";
                 conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                 check_error(conn, db);
 
-                conn = sqlite3_bind_double(res, 1, amount);
+                conn = sqlite3_bind_double(res, 1, to_subtract);
                 check_error(conn, db);
 
                 if (sqlite3_step(res) == SQLITE_DONE)
                 {
-                    sqlite3_reset(res);
-                    sql = "UPDATE clients "
-                          "SET deposit_total = deposit_total + ?,"
-                          "deposit_count = deposit_count + 1 "
-                          "WHERE id = ?;";
-                    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-                    check_error(conn, db);
-
-                    conn = sqlite3_bind_double(res, 1, to_subtract);
-                    check_error(conn, db);
-
-                    if (sqlite3_step(res) == SQLITE_DONE)
-                    {
-                        printf("Las divisas se han agregado a tu cuenta!\n");
-                        sqlite3_finalize(res);
-                        return;
-                    }
-                }
-                else
-                {
-                    fprintf(stderr, "Error al vender las divasas.\n");
+                    printf("Las divisas se han agregado a tu cuenta!\n");
                     sqlite3_finalize(res);
-                    sqlite3_close(db);
-                    exit(-1);
+                    return;
                 }
-                break;
+            }
+            else
+            {
+                fprintf(stderr, "Error al vender las divasas.\n");
+                sqlite3_finalize(res);
+                sqlite3_close(db);
+                exit(-1);
+            }
+            break;
 
-            case DOLARES:
-                sql = "UPDATE bank "
-                      "SET available_cash_usd = available_cash_usd + ?;";
+        case DOLARES:
+            sql = "UPDATE bank "
+                  "SET available_cash_usd = available_cash_usd + ?;";
 
+            conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+            check_error(conn, db);
+
+            conn = sqlite3_bind_double(res, 1, amount);
+            check_error(conn, db);
+            conn = sqlite3_bind_int(res, 2, id);
+            check_error(conn, db);
+
+            if (sqlite3_step(res) == SQLITE_DONE)
+            {
+                sqlite3_reset(res);
+                sql = "UPDATE clients "
+                      "SET deposit_total = deposit_total + ?,"
+                      "deposit_count = deposit_count + 1 "
+                      "WHERE id = ?;";
                 conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
                 check_error(conn, db);
-
-                conn = sqlite3_bind_double(res, 1, amount);
+                conn = sqlite3_bind_double(res, 1, to_subtract);
                 check_error(conn, db);
                 conn = sqlite3_bind_int(res, 2, id);
                 check_error(conn, db);
+                if (sqlite3_step(res) == SQLITE_DONE)
+                {
+                    printf("Las divisas se han agregado a tu cuenta!\n");
+                    sqlite3_finalize(res);
+                    return;
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Error al comprar las divasas.\n");
+                sqlite3_finalize(res);
+                sqlite3_close(db);
+                exit(-1);
+            }
+            break;
+
+        default:
+            fprintf(stderr, "\a\tTipo de divisa incorrecto!\n");
+            break;
+        }
+    }
+}
+
+void buy(const unsigned id, const double amount, const double to_subtract, const unsigned option, const unsigned type)
+{
+    char *sql;
+    int conn;
+
+    /**
+     * @brief Verifica q el banco y el cliente tienen fundos suficientes para
+     * la operacion; si cuentan con el saldo suficiente, se le descuenta
+     * al cliente.
+     * 
+     */
+    sql = "UPDATE clients "
+          "SET deposit_total = deposit_total - ? "
+          "WHERE id = ? AND deposit_total > ? AND "
+          "(SELECT available_cash_eur FROM bank) > ?;";
+    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+    check_error(conn, db);
+
+    conn = sqlite3_bind_double(res, 1, to_subtract);
+    check_error(conn, db);
+    conn = sqlite3_bind_int(res, 2, id);
+    check_error(conn, db);
+    conn = sqlite3_bind_double(res, 3, to_subtract);
+    check_error(conn, db);
+    conn = sqlite3_bind_int(res, 4, amount);
+    check_error(conn, db);
+
+    /**
+     * @brief Si se pudo restar el dinero necesario del client entonces
+     * se continua con la transferencia de la divisa: desde el banco 
+     * al cliente.
+     * 
+     */
+    if (sqlite3_step(res) == SQLITE_DONE)
+    {
+        sqlite3_reset(res);
+        switch (type)
+        {
+        case EUROS:
+            /**
+             * Descuenta la divisa que se le dara del banco al cliente, y
+             * esta misma se le agrega al cliente.
+             */
+            sql = "UPDATE clients "
+                  "SET euros = euros + ? "
+                  "WHERE id = ?;";
+
+            conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+            check_error(conn, db);
+
+            conn = sqlite3_bind_double(res, 1, amount);
+            check_error(conn, db);
+            conn = sqlite3_bind_int(res, 2, id);
+            check_error(conn, db);
+
+            if (sqlite3_step(res) == SQLITE_DONE)
+            {
+                sqlite3_reset(res);
+                sql = "UPDATE bank "
+                      "SET available_cash_eur = available_cash_eur - ?;";
+                conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+                check_error(conn, db);
+                conn = sqlite3_bind_double(res, 1, amount);
+                check_error(conn, db);
 
                 if (sqlite3_step(res) == SQLITE_DONE)
                 {
-                    sqlite3_reset(res);
-                    sql = "UPDATE clients "
-                          "SET deposit_total = deposit_total + ?,"
-                          "deposit_count = deposit_count + 1 "
-                          "WHERE id = ?;";
-                    conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
-                    check_error(conn, db);
-                    conn = sqlite3_bind_double(res, 1, to_subtract);
-                    check_error(conn, db);
-                    conn = sqlite3_bind_int(res, 2, id);
-                    check_error(conn, db);
-                    if (sqlite3_step(res) == SQLITE_DONE)
-                    {
-                        printf("Las divisas se han agregado a tu cuenta!\n");
-                        sqlite3_finalize(res);
-                        return;
-                    }
-                }
-                else
-                {
-                    fprintf(stderr, "Error al comprar las divasas.\n");
+                    printf("Las divisas se han agregado a tu cuenta!\n");
                     sqlite3_finalize(res);
-                    sqlite3_close(db);
-                    exit(-1);
+                    return;
                 }
-                break;
-
-            default:
-                fprintf(stderr, "\a\tTipo de divisa incorrecto!\n");
-                break;
             }
+            else
+            {
+                fprintf(stderr, "Error al comprar las divasas.\n");
+                sqlite3_finalize(res);
+                sqlite3_close(db);
+                exit(-1);
+            }
+            break;
+
+        case DOLARES:
+            sql = "UPDATE clients "
+                  "SET dollars = dollars + ? "
+                  "WHERE id = ?;";
+
+            conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+            check_error(conn, db);
+
+            conn = sqlite3_bind_double(res, 1, amount);
+            check_error(conn, db);
+            conn = sqlite3_bind_int(res, 2, id);
+            check_error(conn, db);
+
+            if (sqlite3_step(res) == SQLITE_DONE)
+            {
+                sqlite3_reset(res);
+                sql = "UPDATE bank "
+                      "SET available_cash_usd = available_cash_usd - ?;";
+                conn = sqlite3_prepare_v2(db, sql, -1, &res, NULL);
+                check_error(conn, db);
+                conn = sqlite3_bind_double(res, 1, amount);
+                check_error(conn, db);
+                if (sqlite3_step(res) == SQLITE_DONE)
+                {
+                    printf("Las divisas se han agregado a tu cuenta!\n");
+                    sqlite3_finalize(res);
+                    return;
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Error al comprar las divasas.\n");
+                sqlite3_finalize(res);
+                sqlite3_close(db);
+                exit(-1);
+            }
+            break;
+
+        default:
+            fprintf(stderr, "\a\tTipo de divisa incorrecto!\n");
+            break;
         }
-        break;
     }
 }
 
