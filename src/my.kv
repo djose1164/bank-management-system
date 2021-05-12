@@ -29,16 +29,16 @@ _ScreenManager:
     # ids
     username: txtipt_username
     password: txtipt_pass
+
     # Root layout.
     BoxLayout:
         orientation: "vertical"
-        spacing: 0, 0
 
         # To display the name app and copyright
         BoxLayout:
             padding: 0
             spacing: 10
-            size_hint_y: .045
+            size_hint_y: .05
                 
             Label:
                 id: name_app
@@ -55,38 +55,46 @@ _ScreenManager:
                 text: "Copyright© 2021 Lusecita Malvadita."
                 halign: "right"
 
-        # To display the inputs and labels for entry data.
+        # Layout for username and password entry.
         BoxLayout:
             orientation: "vertical"
-            padding: 50
-            spacing: 50
 
-            MyLabel:
-                text: "Username:"
-                size_hint_y: .1
+            # To display the username entry data.
+            BoxLayout:
+                orientation: "vertical"
+                padding: 50
+                size_hint_y: .6
 
-            TextInput:
-               
-                id: txtipt_username
-                hint_text: "Type your username..."
-                
-            MyLabel: 
-                text: "Password:"
-                size_hint_y: .1
-
-            Password:
+                MyLabel:
+                    text: "Username:"
+                TextInput:
+                    id: txtipt_username
+                    hint_text: "Type your username..."
             
-                id: txtipt_pass
-                hint_text: "Type your password..."
-                password: True
+            # To display password entry data.        
+            BoxLayout:
+                orientation: "vertical"
+                padding: 50
+                size_hint_y: .6
+                #size_hint_y: .15   
+
+                MyLabel: 
+                    text: "Password:"
+                    #size_hint_y: .1
+
+                Password:
+                    id: txtipt_pass
+                    hint_text: "Type your password..."
+                    on_text_validate: root.login()
 
         # Button login layout.
         BoxLayout:
             # Set the space to 40 between childs.
             spacing: 20
             # Set the distance between the border and childs to 40.
-            padding: 10
-            size_hint_y: .2
+            padding: 20
+            size_hint_y: None
+            height: dp(75)
 
             Button:
                 text: "Login"
@@ -105,46 +113,61 @@ _ScreenManager:
     # Root layout.
     BoxLayout:
         orientation: "vertical"
-        spacing: 20
-        padding: 20
 
         Label:
             text: "Registration!"
             font_size: 36
             bold: True
+            size_hint_y: .2
 
         # Layout for username entry.
         BoxLayout:
-            spacing: 20
+            id: username_entry
             padding: 20
+            size_hint_y: .3
 
             Label:
                 text: "Username:"
+                id: username_entry
+
             TextInput:
                 id: txtipt_username
                 hint_text: "Type your new username..."
+                size_hint_y: .4
+                pos_hint: {"top": .75, "left": 1}
+
 
         # Layout for password entry
         BoxLayout:
-            spacing: 20
             padding: 20
+            size_hint_y: .3
+
             Label:
                 text: "Password:"
+
             Password:
                 id: txtipt_password
                 hint_text: "Type your new password..."
+                size_hint_y: .4
+                pos_hint: txtipt_username.pos_hint
 
         # Layout for buttons
         BoxLayout:
+           # Set the space to 40 between childs.
             spacing: 20
+            # Set the distance between the border and childs to 40.
             padding: 20
+            size_hint_y: None
+            height: dp(75)
+
             Button:
                 text: "Sign up!"
                 on_press: root.add_new_user()
 
             Button:
                 text: "Go back!"
-                on_press: root.manager.current = "login"    
+                on_release: 
+                    root.manager.current = "login"    
 
 <MenuScreen>
     BoxLayout:
