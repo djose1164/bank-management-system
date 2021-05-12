@@ -6,6 +6,7 @@ Copyright© 2021 Lusecita Malvadita.
 """
 
 # Kivy modules.
+import ctypes
 import kivy
 
 kivy.require("1.11.1")
@@ -31,7 +32,10 @@ class LoginScreen(Screen):
 
     def login(self):
         # If True, go to menu screen, otherwise show a popup.
-        if database.db.validate_user(self.username.text, self.password.text):
+        if database.db.validate_user(
+            ctypes.c_char_p(self.username.text.encode("utf-8")),
+            ctypes.c_char_p(self.password.text.encode("utf-8")),
+        ):
             sm.transition.direction = "up"
             sm.current = "menu"
         else:
@@ -59,7 +63,10 @@ class SignupScreen(Screen):
     password = ObjectProperty(None)
 
     def add_new_user(self):
-        if database.db.create_new_user(self.username.text, self.password.text):
+        if database.db.create_new_user(
+            ctypes.c_char_p(self.username.text.encode("utf-8")),
+            ctypes.c_char_p(self.password.text.encode("utf-8")),
+        ):
             popup_msg(func=self.go_to_menu, msg="User created successfully!")
         else:
             popup_msg(
@@ -113,6 +120,13 @@ class MyApp(App):
 def popup_msg(
     func=None, msg: str = "Ups! A bug caught!", status: bool = True, *args, **kwargs
 ):
+    """Display a popup depending in the given optional arguments.
+
+    Args:
+        func (def, optional): The function to be bind (on_dismiss). Defaults to None.
+        msg (str, optional): The menssage to show. Defaults to "Ups! A bug caught!".
+        status (bool, optional): True for done; False to error. Defaults to True.
+    """
     if status:
         popup_title = "Done!"
     else:
@@ -145,6 +159,5 @@ def popup_msg(
 # Run the app.
 if __name__ == "__main__":
     main()
-    print(f"## In main {database.db}")
     app = MyApp()
     app.run()
