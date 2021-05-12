@@ -5,6 +5,7 @@ brief: Implementation of the database using MySQL.
 Copyright© 2021 Lusecita Malvadita. 
 """
 import sqlite3
+import ctypes
 
 
 class Database:
@@ -21,82 +22,13 @@ class Database:
                     password CHAR(20))
                     """
         self.create_table(table)
+        c_lib = ctypes.CDLL(
+            "/home/djose1164/Desktop/Bank-Management-System-by-Lusecita/lib/database.so"
+        )
+        self.create_new_user = c_lib.add_user
+        self.validate_user = c_lib.validate
 
-    def load_id(self):
-        """Return the loaded data from database.
 
-        Raises:
-            e: Error that happened trying to fetch data.
-
-        Returns:
-            dict: The dict with the fetched data.
-        """
-        with sqlite3.connect(self._database_name) as conn:
-            try:
-                cur = conn.cursor()
-                cur.execute("SELECT id FROM users")
-                return cur.fetchall()[0]
-            except Exception as e:
-                raise e
-
-    def create_table(self, sql: str):
-        """Create a table with the given sql statement.
-
-        Args:
-            sql (str): Must be the sql code to create the new table.
-
-        Raises:
-            e: The error cought.
-        """
-        with sqlite3.connect(self._database_name) as conn:
-            try:
-                cur = conn.cursor()
-                cur.execute(sql)
-            except Exception as e:
-                raise e
-
-    def create_new_user(self, username: str, password: str):
-        """To create a new user inside the database.
-
-        Args:
-            username (str): The new user's name.
-            password (str): The new user's password.
-        """
-        sql = "INSERT INTO users VALUES(NULL, ?, ?)"
-        with sqlite3.connect(self._database_name) as conn:
-            try:
-                cur = conn.cursor()
-                cur.execute(
-                    sql,
-                    (
-                        username,
-                        password,
-                    ),
-                )
-                return True
-            except Exception as e:
-                print(f"## create_new_user(): {e}")
-                return False
-
-    def validate_user(self, username: str, password: str):
-        sql = """
-              SELECT username, password
-              FROM users
-              """
-        with sqlite3.connect(self._database_name) as conn:
-            try:
-                cur = conn.cursor()
-                cur.execute(sql)
-                data = cur.fetchall()
-                # Check is the username and password are in the given data.
-                for usrname, psswd in data:
-                    if username == usrname and password == psswd:
-                        return True
-                    else:
-                        return False
-            except Exception as e:
-                pass
-    
     def see(self):
         with sqlite3.connect(self._database_name) as conn:
             try:
@@ -105,7 +37,6 @@ class Database:
                 print(cur.fetchall())
             except Exception as e:
                 raise e
-            
 
 
 db = None
@@ -116,7 +47,7 @@ def main():
     global db
     db = Database()
     db.see()
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()
-    
