@@ -167,15 +167,40 @@ _ScreenManager:
             Button:
                 text: "Go back!"
                 on_release: 
-                    root.manager.current = "login"    
+                    root.manager.current = "login"   
+
+<RV>
+    viewclass: "Button"
+    
+
+    RecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: "vertical"
+        multiselect: True
+        padding: 20
+        spacing: 5
+        # touch_multiselect: True 
 
 <MenuScreen>
     BoxLayout:
+        padding: 5
+        spacing: 50
+
+        orientation: "vertical"
         Label:
             id: lbl_menu
             text: "Menu"
+            font_size: 40
+            bold: True
+            size_hint_y: .1
+        
+        RV:
 
 <TransactionScreen>
     Label:
         id: lbl_transaction
         text: "Transaction"
+

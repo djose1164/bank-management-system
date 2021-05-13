@@ -15,6 +15,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty
+from kivy.uix.recycleview import RecycleView
 import database
 from database import main
 
@@ -96,6 +97,20 @@ class TransactionScreen(Screen):
 # The screen's manager; to change between different screens
 class _ScreenManager(ScreenManager):
     pass
+
+
+class RV(RecycleView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.data = [
+            {"text": "Realizar un deposito", "on_press": database.db.save_new_deposit()},
+            {"text": "Tomar un prestamo"},
+            {"text": "Transacciones"},
+            {"text": "Consulta de estado"},
+            {"text": "Pago de prestamo"},
+            {"text": "Cambio de moneda extranjera"},
+            {"text": "Guardar un objeto"},
+        ]
 
 
 # Create the screen manager.
