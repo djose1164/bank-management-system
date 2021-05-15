@@ -6,7 +6,7 @@ Copyright© 2021 Lusecita Malvadita.
 """
 import sqlite3
 from sqlite3 import Error
-
+import os
 
 class Database:
     """For manage the database. There're listed the useful method for the app
@@ -82,7 +82,7 @@ class Database:
             username (str): The new user's name.
             password (str): The new user's password.
         """
-        sql = "INSERT INTO users VALUES(NULL, ?, ?)"
+        sql = "INSERT INTO users(id, username, password) VALUES(NULL, ?, ?)"
         with sqlite3.connect(self._database_name) as conn:
             try:
                 cur = conn.cursor()
@@ -95,8 +95,10 @@ class Database:
                 )
                 return True
             except Error as e:
+                os.system("clear")
                 print(f"## create_new_user(): {e}")
-                return False
+        
+        return False
 
     def validate_user(self, username: str, password: str):
         sql = """
@@ -119,9 +121,10 @@ class Database:
 
     def save_new_deposit(self, id: int, cash: float):
         """Save a new deposit into the database. The requested information
-        will be taken from the current user.
+        must be passed from the current user.
 
         Args:
+            id (int): The user's id making the deposit.
             cash (float): The amount that the user want to deposit.
         """
         sql = """UPDATE users
@@ -138,6 +141,7 @@ class Database:
                         id,
                     ),
                 )
+                return True
             except Error as e:
                 print(e)
                 return e

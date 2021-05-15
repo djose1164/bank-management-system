@@ -11,9 +11,10 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
 from kivy.uix.recycleview import RecycleView
-
+from kivy.lang import Builder
 import database
 from database import main
 
@@ -22,6 +23,7 @@ import user
 from bank import init_bank
 import bank
 
+Builder.load_file("popup_layout.kv")
 
 class LoginScreen(Screen):
     """This' the first screen (1)
@@ -110,7 +112,7 @@ class RV(RecycleView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.data = [
-            {"text": "Realizar un deposito", "on_press": self.do},
+            {"text": "Realizar un deposito", "on_press": Deposit.show_deposit},
             {"text": "Tomar un prestamo"},
             {"text": "Transacciones"},
             {"text": "Consulta de estado"},
@@ -119,11 +121,7 @@ class RV(RecycleView):
             {"text": "Guardar un objeto"},
         ]
 
-    def do(self):
-        if bank.bank.make_deposit(500.56):
-            popup_msg(msg="Deposito realizado con exito!", status=True)
-        else:
-            popup_msg()
+    
 
 
 # Create the screen manager.
@@ -146,7 +144,13 @@ class MyApp(App):
 
 
 def popup_msg(
-    func=None, msg: str = "Ups! A bug caught!", status: bool = False, *args, **kwargs
+    func=lambda *args: None,
+    msg: str = "Ups! A bug caught!",
+    status: bool = False,
+    content = None,
+    title = None,
+    *args,
+    **kwargs
 ):
     """Display a popup depending in the given optional arguments.
 
@@ -155,10 +159,13 @@ def popup_msg(
         msg (str, optional): The menssage to show. Defaults to "Ups! A bug caught!".
         status (bool, optional): True for done; False to error. Defaults to True.
     """
-    if status:
-        popup_title = "Done!"
+    if title is not None:
+        popup_title = title
     else:
-        popup_title = "Error!"
+        if status:
+            popup_title = "Done!"
+        else:
+            popup_title = "Error!"
 
     lbl = Label(
         text=msg,
@@ -172,17 +179,29 @@ def popup_msg(
 
     popup = Popup(
         title=popup_title,
-        content=lbl,
+        content=content if content is not None else lbl,
         title_size=title_size,
-        size_hint=(0.8, 0.35),
+        size_hint=(0.8, 0.65),
         title_align=title_align,
         title_color="green",
+        on_dismiss=func,
     )
-    if func:
-        popup.bind(on_dismiss=func)
 
     popup.open()
 
+class Deposit(BoxLayout):
+    amount = ObjectProperty(None)
+
+    @staticmethod
+    def show_deposit():
+        popup_msg(content=Deposit(), title="Make deposit")
+    
+    def do_deposit(self):
+        bank.bank.make_deposit(float(self.amount.text))
+        popup_msg(msg="Deposito realizado con exito!", status=True)
+        print(float(self.amount.text))
+        #else:
+        #    popup_msg()
 
 # Run the app.
 if __name__ == "__main__":

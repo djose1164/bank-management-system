@@ -1,0 +1,23 @@
+#: kivy 1.11.1
+
+<Deposit>
+    orientation: "vertical"
+    amount: input_amount
+    message: lbl
+    padding: 15
+    spacing: 15
+
+    Label:
+        id: lbl
+        text: "Enter the quantity to be saved."
+        font_size: 24
+
+    TextInput:
+        id: input_amount
+        hint_text: "Type the amount..."
+
+    Button:
+        background_color: "blue"
+        text: "Save deposit!"
+        on_press: root.do_deposit()
+        
