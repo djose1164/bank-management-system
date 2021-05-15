@@ -6,7 +6,6 @@ Copyright© 2021 Lusecita Malvadita.
 """
 import sqlite3
 from sqlite3 import Error
-import user
 
 
 class Database:
@@ -30,7 +29,6 @@ class Database:
                     object TEXT DEFUALT NULL);
                     """
         self.create_table(table)
-        self._current_user = user.user
 
     def load_id(self, username: str, password: str):
         """Return the loaded data from database.
@@ -46,13 +44,19 @@ class Database:
         with sqlite3.connect(self._database_name) as conn:
             try:
                 cur = conn.cursor()
-                cur.execute(sql, (username, password,))
+                cur.execute(
+                    sql,
+                    (
+                        username,
+                        password,
+                    ),
+                )
                 fetched_data = cur.fetchall()
                 if fetched_data:
                     return fetched_data[0][0]
             except Error as e:
-                print(e) 
-        
+                print(e)
+
         return False
 
     def create_table(self, sql: str):
@@ -110,10 +114,10 @@ class Database:
                         return True
             except Error as e:
                 pass
-        
+
         return False
 
-    def save_new_deposit(self, cash: float):
+    def save_new_deposit(self, id: int, cash: float):
         """Save a new deposit into the database. The requested information
         will be taken from the current user.
 
@@ -131,7 +135,7 @@ class Database:
                     sql,
                     (
                         cash,
-                        self._current_user.get_id(),
+                        id,
                     ),
                 )
             except Error as e:
