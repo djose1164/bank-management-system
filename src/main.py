@@ -6,18 +6,21 @@ Copyright© 2021 Lusecita Malvadita.
 """
 
 # Kivy modules.
-import ctypes
 import kivy
-
-kivy.require("1.11.1")
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty
 from kivy.uix.recycleview import RecycleView
+
 import database
 from database import main
+
+import user
+
+from bank import init_bank
+import bank
 
 
 class LoginScreen(Screen):
@@ -34,9 +37,11 @@ class LoginScreen(Screen):
     def login(self):
         # If True, go to menu screen, otherwise show a popup.
         if database.db.validate_user(
-            ctypes.c_char_p(self.username.text.encode("utf-8")),
-            ctypes.c_char_p(self.password.text.encode("utf-8")),
+            self.username.text,
+            self.password.text,
         ):
+            user.init_user(self.username.text, self.password.text)
+            init_bank(user.user)
             sm.transition.direction = "up"
             sm.current = "menu"
         else:
@@ -65,10 +70,12 @@ class SignupScreen(Screen):
 
     def add_new_user(self):
         if database.db.create_new_user(
-            ctypes.c_char_p(self.username.text.encode("utf-8")),
-            ctypes.c_char_p(self.password.text.encode("utf-8")),
+            self.username.text,
+            self.password.text,
         ):
             popup_msg(func=self.go_to_menu, msg="User created successfully!")
+            user.init_user(self.username.text, self.password.text)
+            init_bank(user.user)
         else:
             popup_msg(
                 msg="Ups! We've caught a bug!\nPlease send an issue with"
@@ -103,7 +110,7 @@ class RV(RecycleView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.data = [
-            {"text": "Realizar un deposito", "on_press": database.db.save_new_deposit()},
+            {"text": "Realizar un deposito", "on_press": self.do},
             {"text": "Tomar un prestamo"},
             {"text": "Transacciones"},
             {"text": "Consulta de estado"},
@@ -111,6 +118,12 @@ class RV(RecycleView):
             {"text": "Cambio de moneda extranjera"},
             {"text": "Guardar un objeto"},
         ]
+
+    def do(self):
+        if bank.bank.make_deposit(500.56):
+            popup_msg(msg="Deposito realizado con exito!", status=True)
+        else:
+            popup_msg()
 
 
 # Create the screen manager.
@@ -133,7 +146,7 @@ class MyApp(App):
 
 
 def popup_msg(
-    func=None, msg: str = "Ups! A bug caught!", status: bool = True, *args, **kwargs
+    func=None, msg: str = "Ups! A bug caught!", status: bool = False, *args, **kwargs
 ):
     """Display a popup depending in the given optional arguments.
 
@@ -173,6 +186,8 @@ def popup_msg(
 
 # Run the app.
 if __name__ == "__main__":
+    kivy.require("1.11.1")
     main()
+    print("## bank: ", bank.bank, "\n## user: ", user.user)
     app = MyApp()
     app.run()
