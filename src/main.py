@@ -128,7 +128,7 @@ class RV(RecycleView):
 sm = ScreenManager(transition=WipeTransition())
 
 # Used to run the program. This class must be one method (build) and return it.
-class MyApp(App):
+class BankManagementApp(App):
     def build(self):
         # A tuple with the different screens
         screens = (
@@ -208,5 +208,5 @@ if __name__ == "__main__":
     kivy.require("1.11.1")
     main()
     print("## bank: ", bank.bank, "\n## user: ", user.user)
-    app = MyApp()
+    app = BankManagementApp()
     app.run()
