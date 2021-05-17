@@ -24,6 +24,8 @@ from bank import init_bank
 import bank
 
 Builder.load_file("popup_layout.kv")
+Builder.load_file("status.kv")
+
 
 class LoginScreen(Screen):
     """This' the first screen (1)
@@ -75,7 +77,11 @@ class SignupScreen(Screen):
             self.username.text,
             self.password.text,
         ):
-            popup_msg(func=self.go_to_menu, msg="User created successfully!")
+            popup_msg(
+                func=self.go_to_menu, 
+                msg="User created successfully!", 
+                status=True
+            )
             user.init_user(self.username.text, self.password.text)
             init_bank(user.user)
         else:
@@ -112,7 +118,7 @@ class RV(RecycleView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.data = [
-            {"text": "Realizar un deposito", "on_press": Deposit.show_deposit},
+            {"text": "Realizar un deposito", "on_press": MyLayout.show_deposit},
             {"text": "Tomar un prestamo"},
             {"text": "Transacciones"},
             {"text": "Consulta de estado"},
@@ -120,8 +126,6 @@ class RV(RecycleView):
             {"text": "Cambio de moneda extranjera"},
             {"text": "Guardar un objeto"},
         ]
-
-    
 
 
 # Create the screen manager.
@@ -147,8 +151,8 @@ def popup_msg(
     func=lambda *args: None,
     msg: str = "Ups! A bug caught!",
     status: bool = False,
-    content = None,
-    title = None,
+    content=None,
+    title: str = None,
     *args,
     **kwargs
 ):
@@ -175,7 +179,7 @@ def popup_msg(
     )
     title_size = 20
     title_align = "center"
-    title_color = "red"
+    title_color = 1, 0, 0, .8
 
     popup = Popup(
         title=popup_title,
@@ -183,25 +187,32 @@ def popup_msg(
         title_size=title_size,
         size_hint=(0.8, 0.65),
         title_align=title_align,
-        title_color="green",
+        title_color=title_color,
         on_dismiss=func,
     )
 
     popup.open()
 
-class Deposit(BoxLayout):
+
+class MyLayout(BoxLayout):
     amount = ObjectProperty(None)
 
     @staticmethod
     def show_deposit():
-        popup_msg(content=Deposit(), title="Make deposit")
-    
+        popup_msg(content=MyLayout(), title="Make deposit")
+
     def do_deposit(self):
-        bank.bank.make_deposit(float(self.amount.text))
-        popup_msg(msg="Deposito realizado con exito!", status=True)
-        print(float(self.amount.text))
-        #else:
-        #    popup_msg()
+        try:
+            bank.bank.make_deposit(float(self.amount.text))
+            popup_msg(msg="Deposito realizado con exito!", status=True)
+            print(float(self.amount.text))
+            # else:
+            #    popup_msg()
+        except Exception as e:
+            popup_msg(msg=str(e))
+        
+
+
 
 # Run the app.
 if __name__ == "__main__":
