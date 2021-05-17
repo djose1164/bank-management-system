@@ -1,6 +1,6 @@
 #: kivy 1.11.1
 
-<Deposit>
+<MyLayout>
     orientation: "vertical"
     amount: input_amount
     message: lbl
@@ -17,7 +17,9 @@
         hint_text: "Type the amount..."
 
     Button:
-        background_color: "blue"
+        background_color: 0, 0, 1, .5
         text: "Save deposit!"
-        on_press: root.do_deposit()
+        on_press: 
+            root.do_deposit()
+            input_amount.text = ""
         
