@@ -1,48 +1,70 @@
 #: kivy 1.11.1
 
-<StatusScreen>
-    GridLayout:
-        cols: 2
-        deposit_count: deposit_count
-        loan_count: loan_count
-        deposit_total: deposit_total
-        loan_total: loan_total
-        euros: euros
-        dollars: dollars
-        object: object
+<StatusLabelValue@Label>
+    font_size: 24
 
-        Label:
-            text: "deposit_count"
-        Label:
-            id: deposit_count
+<StatusLabelColum@StatusLabelValue>:
+    color: .65, 0, 12, 8
+    bold: True
 
-        Label:
-            text: "loan_count"
-        Label:
-            id: loan_count
+<StatusScreen>:
+    deposit_count: lbl_deposit_count
+    loan_count: lbl_loan_count
+    deposit_total: lbl_deposit_total
+    loan_total: lbl_loan_total
+    euros: lbl_euros
+    dollars: lbl_dollars
+    object: lbl_object
 
-        Label:
-            text: "deposit_total"
-        Label:
-            id: deposit_total
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 20
+        padding: 20
 
-        Label:
-            text: "loan_total"
-        Label:
-            id: loan_total
+        GridLayout:
+            cols: 2
 
-        Label:
-            text: "euros"
-        Label:
-            id: euros
+            StatusLabelColum:
+                text: "deposit_count"
+            StatusLabelValue:
+                id: lbl_deposit_count
 
-        Label:
-            text: "dollars"
-        Label:
-            id: dollars
+            StatusLabelColum:
+                text: "loan_count"
+            StatusLabelValue:
+                id: lbl_loan_count
 
-        Label:
-            text: "object"
-        Label:
-            id: object
+            StatusLabelColum:
+                text: "deposit_total"
+            StatusLabelValue:
+                id: lbl_deposit_total
+
+            StatusLabelColum:
+                text: "loan_total"
+            StatusLabelValue:
+                id: lbl_loan_total
+
+            StatusLabelColum:
+                text: "euros"
+            StatusLabelValue:
+                id: lbl_euros
+
+            StatusLabelColum:
+                text: "dollars"
+            StatusLabelValue:
+                id: lbl_dollars
+
+            StatusLabelColum:
+                text: "object"
+            StatusLabelValue:
+                id: lbl_object
+        
+        
+        Button:
+            text: "Go back!"
+            background_color: 1, 0, 0, .8
+            size_hint: .75, .1
+            pos_hint: {"center_x": .5}
+            on_press: 
+                app.root.current = "menu"
 

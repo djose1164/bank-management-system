@@ -5,6 +5,7 @@
     SignupScreen:
     MenuScreen:
     TransactionScreen:
+    StatusScreen:
     
 # txtipt_ means textinput_
 # lbl_ means label_
@@ -27,8 +28,8 @@
 # The welcome just a label telling some like instructions (?
 <LoginScreen>
     # ids
-    username: txtipt_username
-    password: txtipt_pass
+    username: txtipt_username.text
+    password: txtipt_pass.text
 
     # Root layout.
     BoxLayout:
@@ -107,8 +108,8 @@
             
 <SignupScreen>
     # Bind ids.
-    username: txtipt_username
-    password: txtipt_password
+    username: txtipt_username.text
+    password: txtipt_password.text
 
     # Root layout.
     BoxLayout:

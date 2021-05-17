@@ -12,7 +12,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty
+from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.lang import Builder
 import database
@@ -22,6 +22,8 @@ import user
 
 from bank import init_bank
 import bank
+
+kivy.require("1.11.1")
 
 Builder.load_file("popup_layout.kv")
 Builder.load_file("status.kv")
@@ -35,16 +37,16 @@ class LoginScreen(Screen):
         Screen (Screen): A new window.
     """
 
-    username = ObjectProperty(None)
-    password = ObjectProperty(None)
+    username = StringProperty()
+    password = StringProperty()
 
     def login(self):
         # If True, go to menu screen, otherwise show a popup.
         if database.db.validate_user(
-            self.username.text,
-            self.password.text,
+            self.username,
+            self.password,
         ):
-            user.init_user(self.username.text, self.password.text)
+            user.init_user(self.username, self.password)
             init_bank(user.user)
             sm.transition.direction = "up"
             sm.current = "menu"
@@ -69,20 +71,18 @@ class SignupScreen(Screen):
         Screen (Screen): A different screen for signing up.
     """
 
-    username = ObjectProperty(None)
-    password = ObjectProperty(None)
+    username = StringProperty()
+    password = StringProperty()
 
     def add_new_user(self):
         if database.db.create_new_user(
-            self.username.text,
-            self.password.text,
+            self.username,
+            self.password,
         ):
             popup_msg(
-                func=self.go_to_menu, 
-                msg="User created successfully!", 
-                status=True
+                func=self.go_to_menu, msg="User created successfully!", status=True
             )
-            user.init_user(self.username.text, self.password.text)
+            user.init_user(self.username, self.password)
             init_bank(user.user)
         else:
             popup_msg(
@@ -109,6 +109,33 @@ class TransactionScreen(Screen):
     pass
 
 
+class StatusScreen(Screen):
+    deposit_count = ObjectProperty(rebind=True)
+    loan_count = ObjectProperty(rebind=True)
+    deposit_total = ObjectProperty(None)
+    loan_total = ObjectProperty(None)
+    euros = ObjectProperty(None)
+    dollars = ObjectProperty(None)
+    object = ObjectProperty(None)
+
+    def show_data(self):
+        labels = (
+            self.deposit_count,
+            self.loan_count,
+            self.deposit_total,
+            self.loan_total,
+            self.euros,
+            self.dollars,
+            self.object,
+        )
+        datas = bank.bank.load_data_user()
+        try:
+            for label, data in zip(labels, datas):
+                label.text = str(data)
+        except Exception as e:
+            popup_msg(msg=str(e))
+
+
 # The screen's manager; to change between different screens
 class _ScreenManager(ScreenManager):
     pass
@@ -121,11 +148,34 @@ class RV(RecycleView):
             {"text": "Realizar un deposito", "on_press": MyLayout.show_deposit},
             {"text": "Tomar un prestamo"},
             {"text": "Transacciones"},
-            {"text": "Consulta de estado"},
+            {"text": "Consulta de estado", "on_press": MyLayout.show_status},
             {"text": "Pago de prestamo"},
             {"text": "Cambio de moneda extranjera"},
             {"text": "Guardar un objeto"},
         ]
+
+
+class MyLayout(BoxLayout):
+    amount = ObjectProperty(None)
+
+    @staticmethod
+    def show_deposit():
+        popup_msg(content=MyLayout(), title="Make deposit")
+
+    def do_deposit(self):
+        try:
+            bank.bank.make_deposit(float(self.amount.text))
+            popup_msg(msg="Deposito realizado con exito!", status=True)
+            print(float(self.amount.text))
+            # else:
+            #    popup_msg()
+        except Exception as e:
+            popup_msg(msg=str(e))
+
+    @staticmethod
+    def show_status():
+        sm.get_screen("status").show_data()
+        sm.current = "status"
 
 
 # Create the screen manager.
@@ -140,6 +190,7 @@ class BankManagementApp(App):
             SignupScreen(name="sign_up"),
             MenuScreen(name="menu"),
             TransactionScreen(name="transaction"),
+            StatusScreen(name="status"),
         )
 
         for i in screens:
@@ -179,7 +230,7 @@ def popup_msg(
     )
     title_size = 20
     title_align = "center"
-    title_color = 1, 0, 0, .8
+    title_color = 1, 0, 0, 0.8
 
     popup = Popup(
         title=popup_title,
@@ -194,30 +245,9 @@ def popup_msg(
     popup.open()
 
 
-class MyLayout(BoxLayout):
-    amount = ObjectProperty(None)
-
-    @staticmethod
-    def show_deposit():
-        popup_msg(content=MyLayout(), title="Make deposit")
-
-    def do_deposit(self):
-        try:
-            bank.bank.make_deposit(float(self.amount.text))
-            popup_msg(msg="Deposito realizado con exito!", status=True)
-            print(float(self.amount.text))
-            # else:
-            #    popup_msg()
-        except Exception as e:
-            popup_msg(msg=str(e))
-        
-
-
-
 # Run the app.
 if __name__ == "__main__":
-    kivy.require("1.11.1")
+    
     main()
-    print("## bank: ", bank.bank, "\n## user: ", user.user)
     app = BankManagementApp()
     app.run()
