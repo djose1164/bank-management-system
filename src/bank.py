@@ -15,11 +15,15 @@ class Bank:
 
         The information needed will be taken from the current user.
         """
-
+        
         self._current_database.save_new_deposit(
-            self._current_user.get_id, 
-            cash
+        self._current_user.get_id, 
+        cash
         )
+        
+    def load_data_user(self):
+        return database.db.get_data_by_id(self._current_user.get_id)
+   
 
 
 bank = None
