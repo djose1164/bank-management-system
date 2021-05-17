@@ -169,7 +169,7 @@ class RV(RecycleView):
         super().__init__(**kwargs)
         self.data = [
             {"text": "Realizar un deposito", "on_press": MyLayout.show_deposit},
-            {"text": "Tomar un prestamo"},
+            {"text": "Tomar un prestamo", "on_press": MyLayout.show_loan},
             {"text": "Transacciones"},
             {"text": "Consulta de estado", "on_press": MyLayout.show_status},
             {"text": "Pago de prestamo"},
@@ -184,21 +184,46 @@ class MyLayout(BoxLayout):
     Args:
         BoxLayout (BoxLayout): The layout to be used.
     """
+    message = ObjectProperty(None)
     amount = ObjectProperty(None)
+    button = ObjectProperty(None)
+    
+    def __init__(self, msg: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message.text = msg 
 
     @staticmethod
     def show_deposit():
-        popup_msg(content=MyLayout(), title="Make deposit")
+        layout = MyLayout("Enter the amount to be saved.")
+        popup_msg(content=layout, title="Make deposit")
+        layout.button.text = "Save deposit!"
+        layout.button.bind(on_press=layout.do_deposit)
 
-    def do_deposit(self):
+    def do_deposit(self, *args):
         try:
-            bank.bank.make_deposit(float(self.amount.text))
+            bank.bank.make_deposit(float(self.amount))
             popup_msg(msg="Deposito realizado con exito!", status=True)
-            print(float(self.amount.text))
             # else:
             #    popup_msg()
         except Exception as e:
             popup_msg(msg=str(e))
+
+    @staticmethod           
+    def show_loan():
+        layout = MyLayout("Enter the needed cash.")
+        popup_msg(content=layout, title="Make a loan")
+        layout.button.text = "Receive the loan!"
+        layout.button.bind(on_press=layout.make_loan)
+    
+    def make_loan(self, *args):
+        try:
+            bank.bank.make_loan(float(self.amount))
+            popup_msg(msg="Prestamo recibido!", status=True)
+        except Exception as e:
+            popup_msg(msg=str(e))
+            
+    def show_transaction(self, *args):
+        print(args)
 
     @staticmethod
     def show_status():

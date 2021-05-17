@@ -1,15 +1,15 @@
-#: kivy 1.11.1
+#:kivy 1.11.1
 
 <MyLayout>
     orientation: "vertical"
-    amount: input_amount
-    message: lbl
+    amount: input_amount.text
+    message: lbl_message
+    button: button
     padding: 15
     spacing: 15
 
     Label:
-        id: lbl
-        text: "Enter the quantity to be saved."
+        id: lbl_message
         font_size: 24
 
     TextInput:
@@ -18,8 +18,7 @@
 
     Button:
         background_color: 0, 0, 1, .5
-        text: "Save deposit!"
+        id: button
         on_press: 
-            root.do_deposit()
             input_amount.text = ""
         
