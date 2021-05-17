@@ -15,11 +15,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.lang import Builder
+# Database modules.
 import database
 from database import main
-
+# User package
 import user
-
+# Bank moudle
 from bank import init_bank
 import bank
 
@@ -46,6 +47,8 @@ class LoginScreen(Screen):
             self.username,
             self.password,
         ):
+            # Create an instance for the current user; with his info start
+            # running the bank.
             user.init_user(self.username, self.password)
             init_bank(user.user)
             sm.transition.direction = "up"
@@ -82,6 +85,7 @@ class SignupScreen(Screen):
             popup_msg(
                 func=self.go_to_menu, msg="User created successfully!", status=True
             )
+            # After sign up as log in, creates a new user and run the bank.
             user.init_user(self.username, self.password)
             init_bank(user.user)
         else:
@@ -96,20 +100,32 @@ class SignupScreen(Screen):
         sm.current = "menu"
 
 
-# This' the second screen (2)
-# Will display the different available options to the user.
+
 class MenuScreen(Screen):
+    """This' the second screen (2)
+    # Will display the different available options to the user.
+
+    Args:
+        Screen (Screen): The screen.
+    """
     pass
 
 
-# This' the third screen (3)
-# After the user have chosen an option, this screen will be display.
-# All transaction will be done here.
 class TransactionScreen(Screen):
+    """This' the third screen (3)
+
+    Args:
+        Screen (Screen): The screen.
+    """
     pass
 
 
 class StatusScreen(Screen):
+    """Screen for displying the info of the actual user only.
+
+    Args:
+        Screen (Screen): The screen.
+    """
     deposit_count = ObjectProperty(rebind=True)
     loan_count = ObjectProperty(rebind=True)
     deposit_total = ObjectProperty(None)
@@ -119,6 +135,8 @@ class StatusScreen(Screen):
     object = ObjectProperty(None)
 
     def show_data(self):
+        """Get the data from the bank and then shows it to the current user.
+        """
         labels = (
             self.deposit_count,
             self.loan_count,
@@ -142,6 +160,11 @@ class _ScreenManager(ScreenManager):
 
 
 class RV(RecycleView):
+    """For containing the menu's buttons.
+
+    Args:
+        RecycleView (RecycleView): The RecycleView to be used.
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.data = [
@@ -156,6 +179,11 @@ class RV(RecycleView):
 
 
 class MyLayout(BoxLayout):
+    """For being used with the popups.
+
+    Args:
+        BoxLayout (BoxLayout): The layout to be used.
+    """
     amount = ObjectProperty(None)
 
     @staticmethod
@@ -213,7 +241,12 @@ def popup_msg(
         func (def, optional): The function to be bind (on_dismiss). Defaults to None.
         msg (str, optional): The menssage to show. Defaults to "Ups! A bug caught!".
         status (bool, optional): True for done; False to error. Defaults to True.
+        content (Layout): The layout to be used by the popup. If no passed a 
+        label will be used.
+        title (str): For the title of the popup. If no passed a title will be
+        chose depending the status (Error or Done).
     """
+    # Set the title.
     if title is not None:
         popup_title = title
     else:
@@ -221,7 +254,7 @@ def popup_msg(
             popup_title = "Done!"
         else:
             popup_title = "Error!"
-
+    # Create the predefined label, to be used if any content didn't be passed.
     lbl = Label(
         text=msg,
         italic=True,
@@ -231,7 +264,7 @@ def popup_msg(
     title_size = 20
     title_align = "center"
     title_color = 1, 0, 0, 0.8
-
+    # Create a new popup.
     popup = Popup(
         title=popup_title,
         content=content if content is not None else lbl,
@@ -247,7 +280,6 @@ def popup_msg(
 
 # Run the app.
 if __name__ == "__main__":
-    
     main()
     app = BankManagementApp()
     app.run()
