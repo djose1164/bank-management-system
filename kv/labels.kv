@@ -1,6 +1,17 @@
-<StatusLabelValue@Label>
-    font_size: 42
+#:kivy 1.11.1
 
+# For StatusScreen
+<StatusLabelValue@Label>:
+    font_size: 42
 <StatusLabelColum@StatusLabelValue>:
     color: .65, 0, 12, 8
     bold: True
+
+# For TransactionScreen
+<TLabel@Label>:
+    font_size: dp(20)
+
+# For LoginScreen
+<MyLabel@Label>:
+    bold: True
+    font_size: 25
