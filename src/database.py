@@ -8,6 +8,7 @@ import sqlite3
 from sqlite3 import Error
 import os
 
+
 class Database:
     """For manage the database. There're listed the useful method for the app
     bellow.
@@ -96,7 +97,7 @@ class Database:
                 return True
             except Error as e:
                 os.system("clear")
-        
+
         return False
 
     def validate_user(self, username: str, password: str):
@@ -145,6 +146,21 @@ class Database:
                 print(e)
                 return e
 
+    def save_new_loan(self, id: int, cash: float):
+        sql = """UPDATE users
+              SET loan_count = loan_count + 1,
+              loan_total = loan_total + ?
+              WHERE id = ?"""
+        with sqlite3.connect(self._database_name) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                sql,
+                (
+                    cash,
+                    id,
+                ),
+            )
+
     def see(self):
         with sqlite3.connect(self._database_name) as conn:
             try:
@@ -153,7 +169,7 @@ class Database:
                 print(cur.fetchall())
             except Error as e:
                 raise e
-            
+
     def get_data_by_id(self, id: int):
         sql = """SELECT deposit_count, loan_count, deposit_total, loan_total, 
         euros, dollars, object
@@ -164,7 +180,7 @@ class Database:
             cur.execute(sql, (id,))
             data = cur.fetchone()
             return data
-                
+
 
 db = None
 
