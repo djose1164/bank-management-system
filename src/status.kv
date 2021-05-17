@@ -1,7 +1,7 @@
 #: kivy 1.11.1
 
 <StatusLabelValue@Label>
-    font_size: 24
+    font_size: 42
 
 <StatusLabelColum@StatusLabelValue>:
     color: .65, 0, 12, 8
@@ -21,8 +21,16 @@
         spacing: 20
         padding: 20
 
+        Label:
+            text: "Status!"
+            font_size: 48
+            bold: True
+            size_hint_y: .1
+            color: .1, 0, .9, 1
+
         GridLayout:
             cols: 2
+            spacing: -10
 
             StatusLabelColum:
                 text: "deposit_count"
