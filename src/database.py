@@ -96,7 +96,6 @@ class Database:
                 return True
             except Error as e:
                 os.system("clear")
-                print(f"## create_new_user(): {e}")
         
         return False
 
@@ -154,7 +153,18 @@ class Database:
                 print(cur.fetchall())
             except Error as e:
                 raise e
-
+            
+    def get_data_by_id(self, id: int):
+        sql = """SELECT deposit_count, loan_count, deposit_total, loan_total, 
+        euros, dollars, object
+        FROM users
+        WHERE id = ?"""
+        with sqlite3.connect(self._database_name) as conn:
+            cur = conn.cursor()
+            cur.execute(sql, (id,))
+            data = cur.fetchone()
+            return data
+                
 
 db = None
 
