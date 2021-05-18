@@ -27,12 +27,19 @@ class Bank:
         return database.db.get_data_by_id(self._current_user.get_id)
 
     def cash_transaction(self, to_id: int, cash: float):
-        print(f"## id: {to_id}"
-              f"## cash: {cash}")
+        print(f"## id: {to_id}" f"## cash: {cash}")
         self._current_database.save_cash_transaction(
             self._current_user.get_id, to_id, cash
         )
 
+    def pay_loan(self, cash: float):
+        return self._current_database.save_payment_loan(
+            self._current_user.get_id, cash
+        )
+    
+    @property
+    def get_total_loan(self):
+        return self._current_database.get_total_loan(self._current_user.get_id)
 
 bank = None
 
@@ -41,5 +48,3 @@ def init_bank(user):
     global bank
     print("## Bank's module ", user)
     bank = Bank(user)
-    
-

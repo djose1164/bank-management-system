@@ -180,6 +180,19 @@ class Database:
                         to_id,
                     ),
                 )
+                
+    def save_payment_loan(self, id: int, cash: float):
+        sql = """UPDATE users 
+        SET loan_total = loan_total - ?, deposit_total = deposit_total - ? 
+        WHERE id = ? AND (SELECT deposit_total FROM users WHERE id = ?) > ?
+        """
+        with sqlite3.connect(self._database_name) as conn:
+            cur = conn.cursor()
+            cur.execute(sql, (cash, cash, id, id, cash,))
+            if cur.rowcount:
+                return True
+            
+        return False
 
     def see(self):
         with sqlite3.connect(self._database_name) as conn:
@@ -210,6 +223,12 @@ class Database:
 
         return False
 
+    def get_total_loan(self, id: int):
+        with sqlite3.connect(self._database_name) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT loan_total FROM users WHERE id = ?", (id,))
+            data = cur.fetchone()
+            return data[0]
 
 db = None
 

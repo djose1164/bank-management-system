@@ -183,7 +183,7 @@ class RV(RecycleView):
             {"text": "Tomar un prestamo", "on_press": MyLayout.show_loan},
             {"text": "Transacciones", "on_press": MyLayout.show_transaction},
             {"text": "Consulta de estado", "on_press": MyLayout.show_status},
-            {"text": "Pago de prestamo"},
+            {"text": "Pago de prestamo", "on_press": MyLayout.show_payment},
             {"text": "Cambio de moneda extranjera"},
             {"text": "Guardar un objeto"},
         ]
@@ -196,7 +196,7 @@ class MyLayout(BoxLayout):
         BoxLayout (BoxLayout): The layout to be used.
     """
     message = ObjectProperty(None)
-    amount = ObjectProperty(None)
+    amount = StringProperty()
     button = ObjectProperty(None)
     
     def __init__(self, msg: str, *args, **kwargs):
@@ -241,6 +241,21 @@ class MyLayout(BoxLayout):
     def show_status():
         sm.get_screen("status").show_data()
         sm.current = "status"
+        
+    @staticmethod
+    def show_payment():
+        layout = MyLayout(f"Debes {bank.bank.get_total_loan:.6}")
+        popup_msg(content=layout, title="Payment")
+        layout.button.text = "Pay loan!"
+        layout.button.bind(on_press=layout.make_payment)
+        
+    def make_payment(self, *args):
+        try:
+            bank.bank.pay_loan(float(self.amount))
+            popup_msg(msg="Payment done!", status=True)
+            print(args)
+        except Exception as e:
+            popup_msg(msg=str(e))
 
 
 # Create the screen manager.
