@@ -12,7 +12,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import StringProperty, ObjectProperty
+from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.lang import Builder
 # Database modules.
@@ -26,8 +26,10 @@ import bank
 
 kivy.require("1.11.1")
 
-Builder.load_file("popup_layout.kv")
-Builder.load_file("status.kv")
+from os import listdir
+kv_path = "./kv/"
+for kv in listdir(kv_path):
+    Builder.load_file(kv_path + kv)
 
 
 class LoginScreen(Screen):
@@ -117,8 +119,17 @@ class TransactionScreen(Screen):
     Args:
         Screen (Screen): The screen.
     """
-    pass
-
+    user_id = ObjectProperty(None)
+    cash = ObjectProperty(None)
+    object = StringProperty()
+    
+    def make_transaction(self):
+        try:
+            bank.bank.cash_transaction(int(self.user_id.text), float(self.cash.text))
+            popup_msg(msg="Transaccion completada!", status=True)
+        except Exception as e:
+            print(e)
+            popup_msg(msg=str(e))
 
 class StatusScreen(Screen):
     """Screen for displying the info of the actual user only.
@@ -149,7 +160,7 @@ class StatusScreen(Screen):
         datas = bank.bank.load_data_user()
         try:
             for label, data in zip(labels, datas):
-                label.text = str(data)
+                label.text = str(data) if not isinstance(data, float) else f"{data:.6}"
         except Exception as e:
             popup_msg(msg=str(e))
 
@@ -170,7 +181,7 @@ class RV(RecycleView):
         self.data = [
             {"text": "Realizar un deposito", "on_press": MyLayout.show_deposit},
             {"text": "Tomar un prestamo", "on_press": MyLayout.show_loan},
-            {"text": "Transacciones"},
+            {"text": "Transacciones", "on_press": MyLayout.show_transaction},
             {"text": "Consulta de estado", "on_press": MyLayout.show_status},
             {"text": "Pago de prestamo"},
             {"text": "Cambio de moneda extranjera"},
@@ -221,9 +232,10 @@ class MyLayout(BoxLayout):
             popup_msg(msg="Prestamo recibido!", status=True)
         except Exception as e:
             popup_msg(msg=str(e))
-            
-    def show_transaction(self, *args):
-        print(args)
+
+    @staticmethod        
+    def show_transaction():
+        sm.current = "transaction"
 
     @staticmethod
     def show_status():

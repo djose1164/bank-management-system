@@ -161,6 +161,26 @@ class Database:
                 ),
             )
 
+    def save_cash_transaction(self, from_id: int, to_id: int, cash: float):
+        if self.verify_id(to_id):
+            # SQL query: If the id matches, and if the current user has enough
+            # money
+            sql = """UPDATE users
+            SET deposit_total = deposit_total - ?
+            WHERE id = ?  
+            AND (SELECT deposit_total FROM users WHERE id = ?) > ?;
+            """
+            with sqlite3.connect(self._database_name) as conn:
+                cur = conn.cursor()
+                cur.execute(sql, (cash, from_id, from_id, cash,))
+                cur.execute(
+                    "UPDATE users SET deposit_total = deposit_total + ? WHERE id = ?",
+                    (
+                        cash,
+                        to_id,
+                    ),
+                )
+
     def see(self):
         with sqlite3.connect(self._database_name) as conn:
             try:
@@ -181,6 +201,15 @@ class Database:
             data = cur.fetchone()
             return data
 
+    def verify_id(self, id: int):
+        with sqlite3.connect(self._database_name) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM users WHERE id = ?", (id,))
+            if cur.fetchone():
+                return True
+
+        return False
+
 
 db = None
 
@@ -190,6 +219,8 @@ def main():
     global db
     db = Database()
     db.see()
+    #db.save_cash_transaction(2, 1, 107)
+    #db.see()
 
 
 if __name__ == "__main__":

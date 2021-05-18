@@ -1,6 +1,58 @@
 #:kivy 1.11.1
 
-<TransactionScreen>
-    Label:
-        id: lbl_transaction
-        text: "Transaction"
+<TransactionScreen>:
+    user_id: input_id
+    cash: input_cash
+    object: input_object.text
+
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 20
+        padding: 20
+        
+        TLabel:
+            text: "Transactions"
+            font_size: dp(22)
+            bold: True
+            size_hint_y: .05
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+
+            BoxLayout:
+                orientation: "vertical"
+                spacing: -10
+                padding: 20
+
+                TLabel:
+                    id: lbl_transaction
+                    text: "User's id for the transaction."
+                TTextInput:
+                    id: input_id
+                    hint_text: "Type user's id..."
+                
+                TLabel:
+                    text: "Amount to transfer."
+                TTextInput:
+                    id: input_cash
+                    hint_text: "Type the cash quantity..."
+
+                TLabel:
+                    text: "Object's name to transfer."
+                TTextInput:
+                    id: input_object
+                    hint_text: "Type the object's name..."
+    
+        BoxLayout:
+            spaing: 20
+            size_hint_y: .1
+
+            Button:
+                text: "Make transaction!"
+                
+                on_press: root.make_transaction()
+            Button:
+                text: "Go back!"
+                on_press: root.manager.current = "menu"
+        

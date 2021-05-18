@@ -26,6 +26,13 @@ class Bank:
     def load_data_user(self):
         return database.db.get_data_by_id(self._current_user.get_id)
 
+    def cash_transaction(self, to_id: int, cash: float):
+        print(f"## id: {to_id}"
+              f"## cash: {cash}")
+        self._current_database.save_cash_transaction(
+            self._current_user.get_id, to_id, cash
+        )
+
 
 bank = None
 
@@ -34,3 +41,5 @@ def init_bank(user):
     global bank
     print("## Bank's module ", user)
     bank = Bank(user)
+    
+
