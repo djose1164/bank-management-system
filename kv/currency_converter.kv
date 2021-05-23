@@ -1,6 +1,9 @@
 #:kivy 1.11.1
 
 <ConverterScreen>:
+    input_amount: float(input_amount.text) if input_amount.text != "" else 0
+    lbl_convert: lbl_convert
+
     BoxLayout:
         orientation: "vertical"
         padding: 20
@@ -8,21 +11,46 @@
 
         Label:
             text: "Converter Screen"
-            size_hint_y: .2
+            size_hint_y: .15
             bold: True
             font_size: dp(26)
 
-        BoxLayout:
-            orientation: "vertical"
-            padding: 20
+        FloatLayout:
             spacing: 20
 
-            Button:
-                text: "Convert to dollars"
+            Spinner:
+                background_color: 1, 0, 0, 1
+                size_hint: .5, .25
+                pos_hint: {"x": 0, "top": 1}
+                text: "From"
+                values: 
+                    "Dollars", "Euros", "Dominican pesos"
+                on_text:
+                    root.set_spinner_value_from(self)
+                    root.do_convertion()
 
-            Button:
-                text: "Convert to euros"
+            Spinner:
+                background_color: 0, 0, 1, 1
+                size_hint: .5, .25
+                pos_hint: {"right": 1, "top": 1}
+                text: "To"
+                values: 
+                    "Dollars", "Euros", "Dominican pesos"
+                on_text:
+                    root.set_spinner_value_to(self)
+                    root.do_convertion()
 
-            Button:
-                text: "Convert to Dominican pesos"
+            TextInput:
+                id: input_amount
+                size_hint: .6, .25
+                pos_hint: {"center": (.5, .5)}
+                hint_text: "Type amount..."
+                on_text: root.do_convertion()
 
+            Label:
+                id: lbl_convert
+                size_hint: input_amount.size_hint
+                pos_hint: {"center": (.5, .25)}
+                text: "0"
+                bold: True
+                font_size: dp(20)

@@ -30,6 +30,7 @@ import calc
 kivy.require("1.11.1")
 
 from os import listdir
+
 kv_path = "./kv/"
 for kv in listdir(kv_path):
     Builder.load_file(kv_path + kv)
@@ -105,7 +106,6 @@ class SignupScreen(Screen):
         sm.current = "menu"
 
 
-
 class MenuScreen(Screen):
     """This' the second screen (2)
     # Will display the different available options to the user.
@@ -113,6 +113,7 @@ class MenuScreen(Screen):
     Args:
         Screen (Screen): The screen.
     """
+
     pass
 
 
@@ -122,10 +123,11 @@ class TransactionScreen(Screen):
     Args:
         Screen (Screen): The screen.
     """
+
     user_id = ObjectProperty(None)
     cash = ObjectProperty(None)
     object = StringProperty()
-    
+
     def make_transaction(self):
         try:
             bank.bank.cash_transaction(int(self.user_id.text), float(self.cash.text))
@@ -134,12 +136,14 @@ class TransactionScreen(Screen):
             print(e)
             popup_msg(msg=str(e))
 
+
 class StatusScreen(Screen):
     """Screen for displying the info of the actual user only.
 
     Args:
         Screen (Screen): The screen.
     """
+
     deposit_count = ObjectProperty(rebind=True)
     loan_count = ObjectProperty(rebind=True)
     deposit_total = ObjectProperty(None)
@@ -149,8 +153,7 @@ class StatusScreen(Screen):
     object = ObjectProperty(None)
 
     def show_data(self):
-        """Get the data from the bank and then shows it to the current user.
-        """
+        """Get the data from the bank and then shows it to the current user."""
         labels = (
             self.deposit_count,
             self.loan_count,
@@ -169,7 +172,59 @@ class StatusScreen(Screen):
 
 
 class ConverterScreen(Screen):
-    pass
+    input_amount = NumericProperty()
+    lbl_convert = ObjectProperty(None)
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.spinner_value_from = None
+        self.spinner_value_to = None
+
+    def set_spinner_value_from(self, spinner):
+        self.spinner_value_from = spinner.text
+
+    def set_spinner_value_to(self, spinner):
+        self.spinner_value_to = spinner.text
+
+    def get_match_currency(self):
+        if self.spinner_value_from == "Dollars":
+            if self.spinner_value_to == "Euros":
+                return calc.dollars_to_euros
+            elif self.spinner_value_to == "Dominican pesos":
+                return calc.dollars_to_dop
+
+        elif self.spinner_value_from == "Euros":
+            if self.spinner_value_to == "Dollars":
+                return calc.euros_to_dollars
+            elif self.spinner_value_to == "Dominican pesos":
+                return calc.euros_to_dop
+
+        elif self.spinner_value_from == "Dominican pesos":
+            if self.spinner_value_to == "Dollars":
+                return calc.dop_to_dollars
+            elif self.spinner_value_to == "Euros":
+                return calc.dop_to_euros
+        else:
+            popup_msg()
+
+        if self.spinner_value_from == self.spinner_value_to:
+            self.lbl_convert.text = str(round(self.input_amount, 2))
+
+    def do_convertion(self):
+        conditions = (
+            self.spinner_value_from is not None,
+            self.spinner_value_to is not None,
+        )
+
+        if all(conditions):
+            action = self.get_match_currency()
+            if action:
+                value = action(self.input_amount)
+                self.lbl_convert.text = str(value)
+        else:
+            self.lbl_convert.text = "0.0"
+        print(f"## From: {self.spinner_value_from} To: {self.spinner_value_to}")
+
 
 # The screen's manager; to change between different screens
 class Manager(ScreenManager):
@@ -182,6 +237,7 @@ class RV(RecycleView):
     Args:
         RecycleView (RecycleView): The RecycleView to be used.
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.data = [
@@ -201,13 +257,14 @@ class MyLayout(BoxLayout):
     Args:
         BoxLayout (BoxLayout): The layout to be used.
     """
+
     message = ObjectProperty(None)
     amount = StringProperty()
     button = ObjectProperty(None)
-    
+
     def __init__(self, msg: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.message.text = msg 
+        self.message.text = msg
 
     @staticmethod
     def show_deposit():
@@ -225,13 +282,13 @@ class MyLayout(BoxLayout):
         except Exception as e:
             popup_msg(msg=str(e))
 
-    @staticmethod           
+    @staticmethod
     def show_loan():
         layout = MyLayout("Enter the needed cash.")
         popup_msg(content=layout, title="Make a loan")
         layout.button.text = "Receive the loan!"
         layout.button.bind(on_press=layout.make_loan)
-    
+
     def make_loan(self, *args):
         try:
             bank.bank.make_loan(float(self.amount))
@@ -239,7 +296,7 @@ class MyLayout(BoxLayout):
         except Exception as e:
             popup_msg(msg=str(e))
 
-    @staticmethod        
+    @staticmethod
     def show_transaction():
         sm.current = "transaction"
 
@@ -247,22 +304,21 @@ class MyLayout(BoxLayout):
     def show_status():
         sm.get_screen("status").show_data()
         sm.current = "status"
-        
+
     @staticmethod
     def show_payment():
         layout = MyLayout(f"Debes {bank.bank.get_total_loan:.6}")
         popup_msg(content=layout, title="Payment")
         layout.button.text = "Pay loan!"
         layout.button.bind(on_press=layout.make_payment)
-        
+
     def make_payment(self, *args):
         try:
             bank.bank.pay_loan(float(self.amount))
             popup_msg(msg="Payment done!", status=True)
-            print(args)
         except Exception as e:
             popup_msg(msg=str(e))
-            
+
     @staticmethod
     def show_converter():
         sm.current = "converter"
@@ -296,7 +352,7 @@ def popup_msg(
     content=None,
     title: str = None,
     *args,
-    **kwargs
+    **kwargs,
 ):
     """Display a popup depending in the given optional arguments.
 
@@ -304,7 +360,7 @@ def popup_msg(
         func (def, optional): The function to be bind (on_dismiss). Defaults to None.
         msg (str, optional): The menssage to show. Defaults to "Ups! A bug caught!".
         status (bool, optional): True for done; False to error. Defaults to True.
-        content (Layout): The layout to be used by the popup. If no passed a 
+        content (Layout): The layout to be used by the popup. If no passed a
         label will be used.
         title (str): For the title of the popup. If no passed a title will be
         chose depending the status (Error or Done).
