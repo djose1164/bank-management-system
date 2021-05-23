@@ -41,13 +41,16 @@ def get_dop_to_eur():
     response = _do_connection_to_api("DOP", "EUR")
     return response.json()["DOP_EUR"]
 
+
 def get_eur_to_dop():
     response = _do_connection_to_api("EUR", "DOP")
     return response.json()["EUR_DOP"]
 
+
 def get_usd_to_dop():
     response = _do_connection_to_api("USD", "DOP")
     return response.json()["USD_DOP"]
+
 
 def dollars_to_euros(amount: float):
     converted_value: float = amount * get_usd_to_eur()
@@ -68,11 +71,12 @@ def dop_to_euros(amount: float):
     converted_value: float = amount * get_dop_to_eur()
     return round(converted_value, digits)
 
+
 def dollars_to_dop(amount: float):
     converted_value: float = amount * get_usd_to_dop()
     return round(converted_value, digits)
 
+
 def euros_to_dop(amount: float):
     converted_value: float = amount * get_eur_to_dop()
     return round(converted_value, digits)
-
