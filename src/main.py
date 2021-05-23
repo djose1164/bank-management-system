@@ -15,14 +15,17 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.lang import Builder
+
 # Database modules.
 import database
 from database import main
-# User package
+
 import user
-# Bank moudle
+
 from bank import init_bank
 import bank
+
+import calc
 
 kivy.require("1.11.1")
 
@@ -165,8 +168,11 @@ class StatusScreen(Screen):
             popup_msg(msg=str(e))
 
 
+class ConverterScreen(Screen):
+    pass
+
 # The screen's manager; to change between different screens
-class _ScreenManager(ScreenManager):
+class Manager(ScreenManager):
     pass
 
 
@@ -184,7 +190,7 @@ class RV(RecycleView):
             {"text": "Transacciones", "on_press": MyLayout.show_transaction},
             {"text": "Consulta de estado", "on_press": MyLayout.show_status},
             {"text": "Pago de prestamo", "on_press": MyLayout.show_payment},
-            {"text": "Cambio de moneda extranjera"},
+            {"text": "Cambio de divisas", "on_press": MyLayout.show_converter},
             {"text": "Guardar un objeto"},
         ]
 
@@ -256,6 +262,10 @@ class MyLayout(BoxLayout):
             print(args)
         except Exception as e:
             popup_msg(msg=str(e))
+            
+    @staticmethod
+    def show_converter():
+        sm.current = "converter"
 
 
 # Create the screen manager.
@@ -271,6 +281,7 @@ class BankManagementApp(App):
             MenuScreen(name="menu"),
             TransactionScreen(name="transaction"),
             StatusScreen(name="status"),
+            ConverterScreen(name="converter"),
         )
 
         for i in screens:
