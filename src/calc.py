@@ -3,7 +3,6 @@ several divisas that the bank supports.
 
 This module can convert between USD, EUR and DOP. From and to each one.
 """
-from typing import Text
 import requests
 from requests.models import Response
 
