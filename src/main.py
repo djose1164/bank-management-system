@@ -225,6 +225,9 @@ class ConverterScreen(Screen):
         else:
             self.lbl_convert.text = "0.0"
         print(f"## From: {self.spinner_value_from} To: {self.spinner_value_to}")
+        
+class SaveObjectScreen(Screen):
+    pass
 
 
 # The screen's manager; to change between different screens
@@ -248,7 +251,7 @@ class RV(RecycleView):
             {"text": "Consulta de estado", "on_press": MyLayout.show_status},
             {"text": "Pago de prestamo", "on_press": MyLayout.show_payment},
             {"text": "Cambio de divisas", "on_press": MyLayout.show_converter},
-            {"text": "Guardar un objeto"},
+            {"text": "Guardar un objeto", "on_press": MyLayout.show_save_object},
         ]
 
 
@@ -323,6 +326,10 @@ class MyLayout(BoxLayout):
     @staticmethod
     def show_converter():
         sm.current = "converter"
+        
+    @staticmethod
+    def show_save_object():
+        sm.current = "save_object"
 
 
 # Create the screen manager.
@@ -339,6 +346,7 @@ class BankManagementApp(App):
             TransactionScreen(name="transaction"),
             StatusScreen(name="status"),
             ConverterScreen(name="converter"),
+            SaveObjectScreen(name="save_object"),
         )
 
         for i in screens:
