@@ -8,24 +8,21 @@ Copyright© 2021 Lusecita Malvadita.
 # Kivy modules.
 import kivy
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
-from kivy.uix.popup import Popup
-from kivy.uix.label import Label
-from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import StringProperty, ObjectProperty, NumericProperty
-from kivy.uix.recycleview import RecycleView
 from kivy.lang import Builder
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 
+import bank
+import calc
 # Database modules.
 import database
-from database import main
-
 import user
-
 from bank import init_bank
-import bank
-
-import calc
+from database import main
 
 kivy.require("1.11.1")
 
@@ -74,7 +71,7 @@ class LoginScreen(Screen):
 
 class SignupScreen(Screen):
     """Here, the user will be able to create a new account. After that, he'll go
-    to menu screen imedeatly.
+    to menu screen immediately.
 
     Args:
         Screen (Screen): A different screen for signing up.
@@ -163,9 +160,9 @@ class StatusScreen(Screen):
             self.dollars,
             self.object,
         )
-        datas = bank.bank.load_data_user()
+        data = bank.bank.load_data_user()
         try:
-            for label, data in zip(labels, datas):
+            for label, data in zip(labels, data):
                 label.text = str(data) if not isinstance(data, float) else f"{data:.6}"
         except Exception as e:
             popup_msg(msg=str(e))
