@@ -18,6 +18,7 @@ from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 
 import bank
 import calc
+
 # Database modules.
 import database
 import user
@@ -184,22 +185,25 @@ class ConverterScreen(Screen):
         self.spinner_value_to = spinner.text
 
     def get_match_currency(self):
-        if self.spinner_value_from == "Dollars":
-            if self.spinner_value_to == "Euros":
+        DO: str = "Dominican pesos"
+        USD: str = "Dollars"
+        EUR: str = "Euros"
+        if self.spinner_value_from == USD:
+            if self.spinner_value_to == EUR:
                 return calc.dollars_to_euros
-            elif self.spinner_value_to == "Dominican pesos":
+            elif self.spinner_value_to == DO:
                 return calc.dollars_to_dop
 
-        elif self.spinner_value_from == "Euros":
-            if self.spinner_value_to == "Dollars":
+        elif self.spinner_value_from == EUR:
+            if self.spinner_value_to == USD:
                 return calc.euros_to_dollars
-            elif self.spinner_value_to == "Dominican pesos":
+            elif self.spinner_value_to == DO:
                 return calc.euros_to_dop
 
-        elif self.spinner_value_from == "Dominican pesos":
-            if self.spinner_value_to == "Dollars":
+        elif self.spinner_value_from == DO:
+            if self.spinner_value_to == USD:
                 return calc.dop_to_dollars
-            elif self.spinner_value_to == "Euros":
+            elif self.spinner_value_to == EUR:
                 return calc.dop_to_euros
         else:
             popup_msg()
